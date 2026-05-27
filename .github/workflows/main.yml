@@ -15,9 +15,11 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
-      - name: Install Python Dependencies
+      - name: Install Python Dependencies & Adafruit Tools
         run: |
           pip3 install pyserial
+          # Installiert das fehlende Werkzeug zum Verpacken der nRF52-Firmware
+          pip3 install adafruit-nrfutil
 
       - name: Install nRF52 Board Core
         run: |
@@ -28,7 +30,7 @@ jobs:
         run: |
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # Wir erzwingen die ANT-Makros beim Kompilieren der lokalen Header
+          # Kompilieren und automatisches Packen aktivieren
           arduino-cli compile --fqbn "$REAL_FQBN" \
             --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
