@@ -22,8 +22,8 @@ jobs:
 
       - name: Compile Code
         run: |
-          # $GITHUB_WORKSPACE zwingt den Server, direkt im Hauptverzeichnis (Main-Branch) nachzuschauen
-          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build "$GITHUB_WORKSPACE/ANT2.ino"
+          # Wir nutzen die universelle FQBN für den nRF52840, die garantiert im Core enthalten ist
+          arduino-cli compile --fqbn adafruit:nrf52:feather_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
