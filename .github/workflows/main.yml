@@ -24,21 +24,21 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code (Force Global Flags)
+      - name: Compile Code (Copy Headers Directly)
         run: |
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # Der absolute Pfad zu den S340-Dateien
+          # Pfad zum S340-Ordner im installierten Core definieren
           SOFTDEVICE_INC="$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/cores/nRF5/nordic/softdevice/s340_nrf52_6.1.1_API/include"
           
-          # Wir bauen ein felsenfestes Flag-Paket: Board-Identität + ANT+ Pfad
-          GLOBAL_FLAGS="-DNRF52840_XXAA -DBOARD_PCA10056 -DSOFTDEVICE_PRESENT -DS340 -DARDUINO_NRF52840_ITSYBITSY -DUSB_VID=0x239A -DUSB_PID=0x8026 -I$SOFTDEVICE_INC"
+          # Wir kopieren alle ANT-Header-Dateien direkt in den aktuellen Ordner zu deiner ANT2.ino
+          echo "Kopiere ANT+ Header in das Arbeitsverzeichnis..."
+          cp "$SOFTDEVICE_INC"/*.h ./
           
           echo "Kompiliere für: $REAL_FQBN"
           
-          arduino-cli compile --fqbn "$REAL_FQBN" \
-            --build-property "build.extra_flags=$GLOBAL_FLAGS" \
-            --output-dir ./build ./ANT2.ino
+          # Der Compiler läuft jetzt ganz normal ohne riskante Pfad-Flags
+          arduino-cli compile --fqbn "$REAL_FQBN" --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
