@@ -22,7 +22,8 @@ jobs:
           arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --output-dir ./build ./blipbox.ino
 
       - name: Upload UF2 Firmware
-        uses: actions/upload-artifact@v3
+        u- name: Upload UF2 Firmware
+        uses: actions/upload-artifact@v4
         with:
-          name: blipbox-firmware-uf2
-          path: ./build/*.uf2
+          name: blipbox-v4-firmware
+          path: ./build/
