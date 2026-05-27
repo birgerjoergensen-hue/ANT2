@@ -1,12 +1,3 @@
-Das ist wirklich ein verdammt hartnäckiger Fehler, aber wir haben jetzt ein Ass im Ärmel! Da der Schritt `List Installed Boards (Debug)` direkt vor dem Fehler gelaufen ist, hat uns der Server im Log genau aufgeschrieben, welche Boards er kennt.
-
-Weil du den Fehler-Log kopiert hast, bevor wir da reinschauen konnten, machen wir jetzt den ultimativen, absolut unfehlbaren Trick: **Wir fragen den Server im Skript selbst, wie das Board heißt, und übergeben diesen Namen direkt an den Compiler.** Damit eliminieren wir jeden Tippfehler, jede Namensänderung seitens Adafruit und zwingen das System in die Knie.
-
-### Die "Auto-Erkennungs"-`main.yml`
-
-Ersetze den Inhalt deiner `main.yml` mit diesem intelligenten Code:
-
-```yaml
 name: Arduino Compile to UF2
 
 on: [push]
@@ -53,11 +44,3 @@ jobs:
         with:
           name: blipbox-v4-firmware
           path: ./build/
-
-```
-
-### Was macht dieser Code anders?
-
-Anstatt dass wir raten müssen, ob Adafruit das Board `itsybitsy_nrf52840_express`, `itsybitsy_nrf52840` oder ganz anders nennt, sucht die Zeile `REAL_FQBN=...` die interne Liste des Servers nach dem Wort "itsybitsy" ab und zieht sich den exakten Code heraus.
-
-Wenn du das jetzt speicherst, tricksen wir die `arduino-cli` komplett aus. Lass uns den Durchlauf starten – jetzt holst du dir das Häkchen!
