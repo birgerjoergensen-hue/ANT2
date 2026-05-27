@@ -22,8 +22,8 @@ jobs:
 
       - name: Compile Code
         run: |
-          # Hier sucht der Compiler jetzt exakt nach deiner Datei ANT_Programm.ino
-          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build ./ANT_Programm.ino
+          # $GITHUB_WORKSPACE zwingt den Server, direkt im Hauptverzeichnis (Main-Branch) nachzuschauen
+          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build "$GITHUB_WORKSPACE/ANT_Programm.ino"
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
