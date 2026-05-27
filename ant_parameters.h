@@ -1,0 +1,6 @@
+#ifndef ANT_PARAMETERS_H__
+#define ANT_PARAMETERS_H__
+
+#define ANT_NETWORK_NUMBER_PUBLIC       (0x00U)
+
+#endif // ANT_PARAMETERS_H__
