@@ -17,24 +17,28 @@ jobs:
 
       - name: Install Python Dependencies & Adafruit Tools
         run: |
-          pip3 install pyserial
-          # Installiert das fehlende Werkzeug zum Verpacken der nRF52-Firmware
-          pip3 install adafruit-nrfutil
+          pip3 install pyserial adafruit-nrfutil
+          # Installiert das offizielle Microsoft-Werkzeug zur UF2-Konvertierung
+          pip3 install uf2conv
 
       - name: Install nRF52 Board Core
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code
+      - name: Compile Code & Convert to UF2
         run: |
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # Kompilieren und automatisches Packen aktivieren
+          # 1. Normal kompilieren (erzeugt die .hex)
           arduino-cli compile --fqbn "$REAL_FQBN" \
             --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --output-dir ./build ./ANT2.ino
+          
+          # 2. Die .hex-Datei direkt auf dem Server in eine .uf2 umwandeln
+          # Family-ID 0xada52840 ist exakt der nRF52840 von Adafruit
+          uf2conv ./build/ANT2.ino.hex -c -f 0xada52840 -o ./build/ANT2.ino.uf2
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
