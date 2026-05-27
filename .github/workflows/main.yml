@@ -24,16 +24,21 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code (With S340 SoftDevice)
+      - name: Compile Code (Include ANT+ Headers)
         run: |
-          # 1. Wir hängen die SoftDevice-Option s340 direkt an die FQBN an
-          # Das aktiviert den ANT+-Stack sauber im Arduino-System, ohne die MCU-Definitionen zu zerstören
-          FULL_BOARD_FQBN="adafruit:nrf52:itsybitsy52840:softdevice=s340"
-          echo "Kompiliere mit Konfiguration: $FULL_BOARD_FQBN"
+          # Wir nutzen wieder die saubere Basis-FQBN für das ItsyBitsy
+          REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # 2. Wir nutzen compiler.cpp.extra_flags, um das ANT-Makro sicher hinzuzufügen
-          arduino-cli compile --fqbn "$FULL_BOARD_FQBN" \
-            --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
+          # Pfad zu den Nordic-SoftDevice-Dateien im installierten Core
+          SOFTDEVICE_INC="$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/cores/nRF5/nordic/softdevice/s340_nrf52_6.1.1_API/include"
+          
+          echo "Kompiliere für: $REAL_FQBN"
+          echo "Binde ANT+ Pfad ein: $SOFTDEVICE_INC"
+          
+          # Wir übergeben die ANT-Makros UND den Suchpfad zu den Headern, ohne die Board-Flags anzurühren
+          arduino-cli compile --fqbn "$REAL_FQBN" \
+            --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340 -I$SOFTDEVICE_INC" \
+            --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340 -I$SOFTDEVICE_INC" \
             --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
