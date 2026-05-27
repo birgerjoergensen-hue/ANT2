@@ -2,7 +2,6 @@ name: Arduino Compile to UF2
 
 on: [push]
 
-# Setzt die Umgebungsvariable, um die Node.js-Warnung zu beheben
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -21,15 +20,10 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Install Required Libraries
-        run: |
-          # Installiert die für den Bluefruit/ANT+ Code zwingend benötigten Bibliotheken
-          arduino-cli lib install "Adafruit BluefruitLE nRF51"
-          arduino-cli lib install "InternalFileSystem"
-
       - name: Compile Code
         run: |
-          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --output-dir ./build ./blipbox.ino
+          # Wir fügen die Standard-Bibliotheken des Cores explizit als Suchpfad hinzu
+          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build ./blipbox.ino
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
