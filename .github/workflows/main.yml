@@ -24,21 +24,17 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code & Convert to UF2
+      - name: Compile Code & Generate UF2
         run: |
+          # Wir nutzen die FQBN und aktivieren über die Board-Optionen die automatische UF2-Erstellung
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # 1. Normal kompilieren (erzeugt die .hex)
+          echo "Kompiliere und erzeuge finale UF2-Datei..."
+          
           arduino-cli compile --fqbn "$REAL_FQBN" \
             --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --output-dir ./build ./ANT2.ino
-          
-          # 2. Das originale Microsoft-Konvertierungsskript direkt herunterladen
-          curl -s -O https://raw.githubusercontent.com/microsoft/uf2/master/utils/uf2conv.py
-          
-          # 3. Die .hex-Datei in eine .uf2 umwandeln (mit der korrekten nRF52840 Family-ID)
-          python3 uf2conv.py ./build/ANT2.ino.hex -c -f 0xada52840 -o ./build/ANT2.ino.uf2
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
