@@ -15,15 +15,25 @@ jobs:
       - name: Setup Arduino CLI
         uses: arduino/setup-arduino-cli@v1
 
+      - name: Install Python Dependencies
+        run: |
+          # Zwingend notwendig für den Adafruit nRF52-Core unter Linux
+          pip3 install pyserial
+
       - name: Install nRF52 Board Core
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
+      - name: List Installed Boards (Debug)
+        run: |
+          # Das zeigt uns im Log genau an, wie das Board auf dem Server heißt
+          arduino-cli board listall adafruit:nrf52
+
       - name: Compile Code
         run: |
-          # Wir nutzen die universelle FQBN für den nRF52840, die garantiert im Core enthalten ist
-          arduino-cli compile --fqbn adafruit:nrf52:feather_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build ./ANT2.ino
+          # Versucht die Kompilierung mit dem ItsyBitsy nRF52840
+          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
