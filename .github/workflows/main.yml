@@ -24,28 +24,15 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code (Smart Copy Headers)
+      - name: Compile Code
         run: |
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # 1. Wir suchen automatisch den echten Ordner, in dem die "ant_interface.h" versteckt ist
-          echo "Suche den originalen ANT+ Header-Ordner..."
-          FOUND_PATH=$(find $HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/ -name "ant_interface.h" -exec dirname {} \;)
-          
-          if [ -z "$FOUND_PATH" ]; then
-            echo "FEHLER: ant_interface.h wurde im Core-Verzeichnis überhaupt nicht gefunden!"
-            exit 1
-          fi
-          
-          echo "Erfolgreich gefunden in: $FOUND_PATH"
-          
-          # 2. Wir kopieren alle Header-Dateien aus diesem gefundenen Ordner direkt zu deiner ANT2.ino
-          cp "$FOUND_PATH"/*.h ./
-          
-          echo "Kompiliere für: $REAL_FQBN"
-          
-          # 3. Compiler starten
-          arduino-cli compile --fqbn "$REAL_FQBN" --output-dir ./build ./ANT2.ino
+          # Wir erzwingen die ANT-Makros beim Kompilieren der lokalen Header
+          arduino-cli compile --fqbn "$REAL_FQBN" \
+            --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
+            --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
+            --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
