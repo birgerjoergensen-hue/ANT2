@@ -24,20 +24,27 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code (Copy Headers Directly)
+      - name: Compile Code (Smart Copy Headers)
         run: |
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # Pfad zum S340-Ordner im installierten Core definieren
-          SOFTDEVICE_INC="$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/cores/nRF5/nordic/softdevice/s340_nrf52_6.1.1_API/include"
+          # 1. Wir suchen automatisch den echten Ordner, in dem die "ant_interface.h" versteckt ist
+          echo "Suche den originalen ANT+ Header-Ordner..."
+          FOUND_PATH=$(find $HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/ -name "ant_interface.h" -exec dirname {} \;)
           
-          # Wir kopieren alle ANT-Header-Dateien direkt in den aktuellen Ordner zu deiner ANT2.ino
-          echo "Kopiere ANT+ Header in das Arbeitsverzeichnis..."
-          cp "$SOFTDEVICE_INC"/*.h ./
+          if [ -z "$FOUND_PATH" ]; then
+            echo "FEHLER: ant_interface.h wurde im Core-Verzeichnis überhaupt nicht gefunden!"
+            exit 1
+          fi
+          
+          echo "Erfolgreich gefunden in: $FOUND_PATH"
+          
+          # 2. Wir kopieren alle Header-Dateien aus diesem gefundenen Ordner direkt zu deiner ANT2.ino
+          cp "$FOUND_PATH"/*.h ./
           
           echo "Kompiliere für: $REAL_FQBN"
           
-          # Der Compiler läuft jetzt ganz normal ohne riskante Pfad-Flags
+          # 3. Compiler starten
           arduino-cli compile --fqbn "$REAL_FQBN" --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
