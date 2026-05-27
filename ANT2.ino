@@ -101,3 +101,19 @@ void sendAntCommand(uint8_t commandCode) {
     delay(10); // Kurze Pause zwischen den Wiederholungen
   }
 }
+// Einbindung der echten SoftDevice-Aufrufe für den Linker
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Diese Deklaration sagt dem Linker, dass die Funktion zur Laufzeit vom SoftDevice 
+// an einer festen Adresse im Speicher aufgerufen wird (SVC-Call)
+uint32_t sd_ant_broadcast_message_tx(uint8_t channel_number, uint8_t message_length, uint8_t * p_message_payload) {
+    // SVC 0x56 ist der interne Nordic-Code für ANT-Sendedaten
+    __asm volatile("svc 0x56\n"
+                   "bx lr\n"); 
+}
+
+#ifdef __cplusplus
+}
+#endif
