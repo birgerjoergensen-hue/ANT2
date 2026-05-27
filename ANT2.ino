@@ -1,4 +1,3 @@
-C++
 #ifdef SOFTDEVICE_PRESENT
 extern "C" {
   #include "ant_interface.h"
