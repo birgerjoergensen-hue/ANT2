@@ -22,19 +22,18 @@ jobs:
       - name: Install nRF52 Board Core
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-          # Wir installieren exakt die Version 1.7.0, die du nutzt
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code (With ANT+ SoftDevice)
+      - name: Compile Code (With S340 SoftDevice)
         run: |
-          # FQBN ermitteln
-          REAL_FQBN=$(arduino-cli board listall adafruit:nrf52 | grep -i "itsybitsy" | awk '{print $NF}' | head -n 1)
-          echo "Kompiliere für: $REAL_FQBN"
+          # 1. Wir hängen die SoftDevice-Option s340 direkt an die FQBN an
+          # Das aktiviert den ANT+-Stack sauber im Arduino-System, ohne die MCU-Definitionen zu zerstören
+          FULL_BOARD_FQBN="adafruit:nrf52:itsybitsy52840:softdevice=s340"
+          echo "Kompiliere mit Konfiguration: $FULL_BOARD_FQBN"
           
-          # Wir übergeben dem Compiler die Flags, damit er die ANT+ Befehle (sd_ant_...) freischaltet
-          arduino-cli compile --fqbn "$REAL_FQBN" \
-            --build-property "build.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
-            --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries" \
+          # 2. Wir nutzen compiler.cpp.extra_flags, um das ANT-Makro sicher hinzuzufügen
+          arduino-cli compile --fqbn "$FULL_BOARD_FQBN" \
+            --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
