@@ -1,5 +1,3 @@
-name: Arduino Compile to UF2
-
 on: [push] # Startet die Kompilierung automatisch, sobald du speicherst
 
 jobs:
@@ -16,11 +14,9 @@ jobs:
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-
       - name: Compile Code
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --output-dir ./build ./blipbox.ino
-
       - name: Upload UF2 Firmware
         u- name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
