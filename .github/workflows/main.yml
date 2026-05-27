@@ -24,21 +24,20 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Compile Code (Include ANT+ Headers)
+      - name: Compile Code (Force Global Flags)
         run: |
-          # Wir nutzen wieder die saubere Basis-FQBN für das ItsyBitsy
           REAL_FQBN="adafruit:nrf52:itsybitsy52840"
           
-          # Pfad zu den Nordic-SoftDevice-Dateien im installierten Core
+          # Der absolute Pfad zu den S340-Dateien
           SOFTDEVICE_INC="$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/cores/nRF5/nordic/softdevice/s340_nrf52_6.1.1_API/include"
           
-          echo "Kompiliere für: $REAL_FQBN"
-          echo "Binde ANT+ Pfad ein: $SOFTDEVICE_INC"
+          # Wir bauen ein felsenfestes Flag-Paket: Board-Identität + ANT+ Pfad
+          GLOBAL_FLAGS="-DNRF52840_XXAA -DBOARD_PCA10056 -DSOFTDEVICE_PRESENT -DS340 -DARDUINO_NRF52840_ITSYBITSY -DUSB_VID=0x239A -DUSB_PID=0x8026 -I$SOFTDEVICE_INC"
           
-          # Wir übergeben die ANT-Makros UND den Suchpfad zu den Headern, ohne die Board-Flags anzurühren
+          echo "Kompiliere für: $REAL_FQBN"
+          
           arduino-cli compile --fqbn "$REAL_FQBN" \
-            --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340 -I$SOFTDEVICE_INC" \
-            --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340 -I$SOFTDEVICE_INC" \
+            --build-property "build.extra_flags=$GLOBAL_FLAGS" \
             --output-dir ./build ./ANT2.ino
 
       - name: Upload UF2 Firmware
