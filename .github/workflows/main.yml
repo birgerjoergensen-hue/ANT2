@@ -23,7 +23,7 @@ jobs:
       - name: Compile Code
         run: |
           # $GITHUB_WORKSPACE zwingt den Server, direkt im Hauptverzeichnis (Main-Branch) nachzuschauen
-          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build "$GITHUB_WORKSPACE/ANT_Programm.ino"
+          arduino-cli compile --fqbn adafruit:nrf52:itsybitsy_nrf52840_express --libraries "$HOME/.arduino15/packages/adafruit/hardware/nrf52" --output-dir ./build "$GITHUB_WORKSPACE/ANT_Program.ino"
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
