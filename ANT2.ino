@@ -1,3 +1,10 @@
+C++
+#ifdef SOFTDEVICE_PRESENT
+extern "C" {
+  #include "ant_interface.h"
+  #include "ant_parameters.h"
+}
+#endif
 #include <bluefruit.h> // Basis-Bibliothek für nRF52 Funkfunktionen
 
 // Pins für die beiden SRAM Blips definieren
