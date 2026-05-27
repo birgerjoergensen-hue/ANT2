@@ -18,8 +18,6 @@ jobs:
       - name: Install Python Dependencies & Adafruit Tools
         run: |
           pip3 install pyserial adafruit-nrfutil
-          # Installiert das offizielle Microsoft-Werkzeug zur UF2-Konvertierung
-          pip3 install uf2conv
 
       - name: Install nRF52 Board Core
         run: |
@@ -36,9 +34,11 @@ jobs:
             --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
             --output-dir ./build ./ANT2.ino
           
-          # 2. Die .hex-Datei direkt auf dem Server in eine .uf2 umwandeln
-          # Family-ID 0xada52840 ist exakt der nRF52840 von Adafruit
-          uf2conv ./build/ANT2.ino.hex -c -f 0xada52840 -o ./build/ANT2.ino.uf2
+          # 2. Das originale Microsoft-Konvertierungsskript direkt herunterladen
+          curl -s -O https://raw.githubusercontent.com/microsoft/uf2/master/utils/uf2conv.py
+          
+          # 3. Die .hex-Datei in eine .uf2 umwandeln (mit der korrekten nRF52840 Family-ID)
+          python3 uf2conv.py ./build/ANT2.ino.hex -c -f 0xada52840 -o ./build/ANT2.ino.uf2
 
       - name: Upload UF2 Firmware
         uses: actions/upload-artifact@v4
