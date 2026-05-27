@@ -2,6 +2,10 @@ name: Arduino Compile to UF2
 
 on: [push]
 
+# Setzt die Umgebungsvariable, um die Node.js-Warnung zu beheben
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   compile:
     runs-on: ubuntu-latest
@@ -16,6 +20,12 @@ jobs:
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+
+      - name: Install Required Libraries
+        run: |
+          # Installiert die für den Bluefruit/ANT+ Code zwingend benötigten Bibliotheken
+          arduino-cli lib install "Adafruit BluefruitLE nRF51"
+          arduino-cli lib install "InternalFileSystem"
 
       - name: Compile Code
         run: |
