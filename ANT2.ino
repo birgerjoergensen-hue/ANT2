@@ -3,17 +3,23 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-const int BUTTON_LEFT = 9;   // Pin D9 (unten links)
-const int BUTTON_RIGHT = 10; // Pin D10 (unten rechts)
+// Definition der 4 Knöpfe laut deinem Plan
+const int ANT1 = 9;  // Pin D9  (unten links)
+const int ANT2 = 10; // Pin D10 (unten rechts)
+const int ANT3 = 16; // Pin D16 (über ANT2, rechts)
+const int ANT4 = 8;  // Pin D8  (über ANT1, links)
 
 void setup() {
-  pinMode(BUTTON_LEFT, INPUT_PULLUP);
-  pinMode(BUTTON_RIGHT, INPUT_PULLUP);
+  // Alle 4 Pins als Eingang mit internem Pull-Up-Widerstand aktivieren
+  pinMode(ANT1, INPUT_PULLUP);
+  pinMode(ANT2, INPUT_PULLUP);
+  pinMode(ANT3, INPUT_PULLUP);
+  pinMode(ANT4, INPUT_PULLUP);
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4); // Maximale Sendeleistung
 
-  // Dein Wunschname
+  // Dein Wunschname im Bluetooth-Netzwerk
   Bluefruit.setName("Birgers DIY");
 
   bledis.setManufacturer("GEMMI Tech");
@@ -25,8 +31,6 @@ void setup() {
   // Advertising (Funkbarke) einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  
-  // Zurück zur funktionierenden Keyboard-Kennung
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
   
@@ -40,21 +44,37 @@ void setup() {
 }
 
 void loop() {
-  // Linker Knopf (D9) -> Simuliert "Pfeil nach links" (Seitenwechsel zurück)
-  if (digitalRead(BUTTON_LEFT) == LOW) {
+  // KNOPF 1: ANT1 (D9) -> Pfeil nach links
+  if (digitalRead(ANT1) == LOW) {
     blehid.keyPress(HID_KEY_ARROW_LEFT);
     delay(50); // Entprellen
     blehid.keyRelease();
-    while (digitalRead(BUTTON_LEFT) == LOW) { delay(10); } // Warten bis losgelassen
+    while (digitalRead(ANT1) == LOW) { delay(10); } // Warten bis losgelassen
   }
 
-  // Rechter Knopf (D10) -> Simuliert "Pfeil nach rechts" (Seitenwechsel vor)
-  if (digitalRead(BUTTON_RIGHT) == LOW) {
+  // KNOPF 2: ANT2 (D10) -> Pfeil nach rechts
+  if (digitalRead(ANT2) == LOW) {
     blehid.keyPress(HID_KEY_ARROW_RIGHT);
     delay(50);
     blehid.keyRelease();
-    while (digitalRead(BUTTON_RIGHT) == LOW) { delay(10); }
+    while (digitalRead(ANT2) == LOW) { delay(10); }
   }
 
-  delay(10); // Stromsparen
+  // KNOPF 3: ANT3 (D16) -> Pfeil nach oben
+  if (digitalRead(ANT3) == LOW) {
+    blehid.keyPress(HID_KEY_ARROW_UP);
+    delay(50);
+    blehid.keyRelease();
+    while (digitalRead(ANT3) == LOW) { delay(10); }
+  }
+
+  // KNOPF 4: ANT4 (D8) -> Pfeil nach unten
+  if (digitalRead(ANT4) == LOW) {
+    blehid.keyPress(HID_KEY_ARROW_DOWN);
+    delay(50);
+    blehid.keyRelease();
+    while (digitalRead(ANT4) == LOW) { delay(10); }
+  }
+
+  delay(10); // Stromsparen im Loop
 }
