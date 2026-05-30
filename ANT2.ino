@@ -1,22 +1,34 @@
 // =================================================================
-// PROJEKT: Birger DIY 46 (Hard-Reset für Pairing)
+// PROJEKT: Birger DIY 47 (Koppel-Fix: HID-Mode erzwungen)
 // =================================================================
 #include <bluefruit.h>
 
+BLEDis bledis;
+BLEHidAdafruit blehid;
+
 void setup() {
-  // Bluetooth löschen und neu starten
   Bluefruit.begin();
-  Bluefruit.setName("Birger DIY 46");
   
-  // Advertising-Einstellungen für maximale Sichtbarkeit
+  // WICHTIG: Identität als Tastatur festlegen, damit keine App-Anfrage kommt
+  Bluefruit.setAppearance(BLE_APPEARANCE_HID_KEYBOARD);
+  
+  bledis.setManufacturer("GEMMI");
+  bledis.setModel("Blipbox");
+  bledis.begin();
+
+  blehid.begin();
+  
+  Bluefruit.setName("Birger DIY 47");
+  
+  // Advertising-Einstellungen für Standard-HID-Koppelung
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addService(blehid);
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addName();
-  Bluefruit.Advertising.setInterval(160, 160); // 100ms Intervall = sehr schnell sichtbar
+  
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // Leerlauf, damit Bluetooth-Stack 100% Energie für das Advertising hat
   delay(100);
 }
