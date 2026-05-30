@@ -1,3 +1,7 @@
+// =================================================================
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 22
+// =================================================================
+
 #include <bluefruit.h>
 
 BLEDis bledis;
@@ -73,15 +77,15 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
-  // HIER DIE ENTSCHEIDENDE ERGÄNZUNG FÜR VERSION 21:
-  // Wir sagen dem nRF52-Chip, dass er Verschlüsselung ohne Display (Just Works) beherrscht.
-  // Ohne diese Zeile verweigert das Handy nach dem requestPairing() die dauerhafte Verbindung!
+  // --- ZUSÄTZLICHE RETTUNGSANKER FÜR DIE VERBINDUNG ---
+  // Sagt dem Board, dass es neue Koppelungen erzwingen und alte Fehler ignorieren soll
   Bluefruit.Security.setIOCaps(MITM_IOCAPS_NONE); 
+  Bluefruit.Security.setMITM(false);
 
-  // STUR HOCHGEZÄHLT: Version 21 gegen den Cache
-  Bluefruit.setName("Birger DIY 21");
+  // NAME GEÄNDERT UND IMMER WEITERGEZÄHLT: Version 22
+  Bluefruit.setName("Birger DIY 22");
 
-  // Deine Callbacks sauber registriert
+  // Callbacks registrieren
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
   Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback);
