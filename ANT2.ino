@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Birger DIY 56 (Buchstaben-Test)
+// PROJEKT: Birger DIY 57 (Kontrolliertes Senden)
 // =================================================================
 #include <bluefruit.h>
 #include <hal/nrf_gpio.h>
@@ -18,12 +18,12 @@ void setup() {
   bledis.begin();
   blehid.begin();
   
-  Bluefruit.setName("Birger DIY 56");
+  Bluefruit.setName("Birger DIY 57");
   
   nrf_gpio_cfg_input(PIN_D9_PHYSICAL, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_input(PIN_D8_PHYSICAL, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_output(RED_LED);
-  nrf_gpio_pin_write(RED_LED, 0); 
+  nrf_gpio_pin_write(RED_LED, 0); // Aus
 
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addService(blehid);
@@ -33,24 +33,29 @@ void setup() {
 }
 
 void loop() {
-  // D9 sendet 'A'
+  // Pin D9 Senden
   if (nrf_gpio_pin_read(PIN_D9_PHYSICAL) == 0) {
-    nrf_gpio_pin_write(RED_LED, 1);
+    nrf_gpio_pin_write(RED_LED, 1); // LED An
     blehid.keyPress(HID_KEY_A);
     delay(50);
     blehid.keyRelease();
+    delay(200); // Sicherheits-Pause für das Handy
+    
+    // Warten bis Pin losgelassen wird, aber ohne zu senden
     while (nrf_gpio_pin_read(PIN_D9_PHYSICAL) == 0) { delay(10); }
-    nrf_gpio_pin_write(RED_LED, 0);
+    nrf_gpio_pin_write(RED_LED, 0); // LED Aus
   }
 
-  // D8 sendet 'B' (statt Pfeiltaste runter)
+  // Pin D8 Senden
   if (nrf_gpio_pin_read(PIN_D8_PHYSICAL) == 0) {
-    nrf_gpio_pin_write(RED_LED, 1);
+    nrf_gpio_pin_write(RED_LED, 1); // LED An
     blehid.keyPress(HID_KEY_B);
     delay(50);
     blehid.keyRelease();
+    delay(200);
+    
     while (nrf_gpio_pin_read(PIN_D8_PHYSICAL) == 0) { delay(10); }
-    nrf_gpio_pin_write(RED_LED, 0);
+    nrf_gpio_pin_write(RED_LED, 0); // LED Aus
   }
   delay(10);
 }
