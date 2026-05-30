@@ -25,6 +25,30 @@ void startAdv(void) {
   Bluefruit.Advertising.start(0);
 }
 
+void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status) {
+  (void) conn_handle;
+  (void) auth_status;
+}
+
+void connection_secured_callback(uint16_t conn_handle) {
+  (void) conn_handle;
+}
+
+void connect_callback(uint16_t conn_handle) {
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+  if (connection != NULL) {
+    if (!connection->secured()) {
+      connection->requestPairing();
+    }
+  }
+}
+
+void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
+  (void) conn_handle;
+  (void) reason;
+  startAdv();
+}
+
 void tapKey(uint8_t keycode) {
   if (!Bluefruit.connected()) {
     return;
@@ -45,41 +69,3 @@ void setup() {
   pinMode(ANT1, INPUT_PULLUP);
   pinMode(ANT2, INPUT_PULLUP);
   pinMode(ANT3, INPUT_PULLUP);
-  pinMode(ANT4, INPUT_PULLUP);
-
-  Bluefruit.begin();
-  Bluefruit.setTxPower(4);
-  Bluefruit.setName("Birger DIY 17");
-
-  bledis.setManufacturer("GEMMI Tech");
-  bledis.setModel("Blipbox v4");
-  bledis.begin();
-
-  blehid.begin();
-
-  startAdv();
-}
-
-void loop() {
-  if (digitalRead(ANT1) == LOW) {
-    tapKey(HID_KEY_ARROW_LEFT);
-    waitForRelease(ANT1);
-  }
-
-  if (digitalRead(ANT2) == LOW) {
-    tapKey(HID_KEY_ARROW_RIGHT);
-    waitForRelease(ANT2);
-  }
-
-  if (digitalRead(ANT3) == LOW) {
-    tapKey(HID_KEY_ARROW_UP);
-    waitForRelease(ANT3);
-  }
-
-  if (digitalRead(ANT4) == LOW) {
-    tapKey(HID_KEY_ARROW_DOWN);
-    waitForRelease(ANT4);
-  }
-
-  delay(10);
-}
