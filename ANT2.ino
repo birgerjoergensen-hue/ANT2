@@ -1,23 +1,22 @@
 // =================================================================
-// PROJEKT: Birger DIY 45 (Letzter Hardware-Check)
+// PROJEKT: Birger DIY 46 (Hard-Reset für Pairing)
 // =================================================================
 #include <bluefruit.h>
-#include <hal/nrf_gpio.h>
-
-#define TEST_PIN    NRF_GPIO_PIN_MAP(0, 9) // Pin D10
-#define RED_LED     NRF_GPIO_PIN_MAP(0, 15)
 
 void setup() {
-  nrf_gpio_cfg_input(TEST_PIN, NRF_GPIO_PIN_PULLUP);
-  nrf_gpio_cfg_output(RED_LED);
-  nrf_gpio_pin_write(RED_LED, 1); // Aus
+  // Bluetooth löschen und neu starten
+  Bluefruit.begin();
+  Bluefruit.setName("Birger DIY 46");
+  
+  // Advertising-Einstellungen für maximale Sichtbarkeit
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addName();
+  Bluefruit.Advertising.setInterval(160, 160); // 100ms Intervall = sehr schnell sichtbar
+  Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // Wenn Pin gegen GND gedrückt wird, muss die LED angehen
-  if (nrf_gpio_pin_read(TEST_PIN) == 0) {
-    nrf_gpio_pin_write(RED_LED, 0); // AN
-  } else {
-    nrf_gpio_pin_write(RED_LED, 1); // AUS
-  }
+  // Leerlauf, damit Bluetooth-Stack 100% Energie für das Advertising hat
+  delay(100);
 }
