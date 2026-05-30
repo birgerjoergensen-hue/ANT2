@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 35
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 36
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,12 +7,12 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-// Wir nutzen die offiziellen Arduino-Board-Definitionen für die analogen/digitalen Pins.
-// Das übersetzt die aufgedruckte "9" und "10" in die echten nRF52-GPIO-Nummern!
-const int ANT1 = A1;  // Entspricht meistens Pin 9 / A1 auf dem Board
-const int ANT2 = A2;  // Entspricht meistens Pin 10 / A2 auf dem Board
-const int ANT3 = A3;  // Reserve
-const int ANT4 = A0;  // Reserve
+// JETZT DIE ECHTEN HARDWARE-PINS (Port 1):
+// 106 entspricht GPIO 38, 104 entspricht GPIO 36
+const int ANT1 = 38;  // Beschriftung "9" (Hardware P1.06)
+const int ANT2 = 36;  // Beschriftung "10" (Hardware P1.04)
+const int ANT3 = 16;  // Reserve
+const int ANT4 = 8;   // Reserve
 
 const int MY_LED_RED  = 15; 
 const int MY_LED_BLUE = 17;
@@ -76,7 +76,7 @@ void waitForRelease(int pin) {
 }
 
 void setup() {
-  // Verkoppelung der Pins mit internem Pullup-Widerstand
+  // Jetzt werden die echten Port-1-Leitungen unter Strom gesetzt!
   pinMode(ANT1, INPUT_PULLUP);
   pinMode(ANT2, INPUT_PULLUP);
   pinMode(ANT3, INPUT_PULLUP);
@@ -93,8 +93,8 @@ void setup() {
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // STUR HOCHGEZÄHLT: Version 35 am Start
-  Bluefruit.setName("Birger DIY 35");
+  // IMMER WEITERGEZÄHLT: Version 36
+  Bluefruit.setName("Birger DIY 36");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -113,13 +113,13 @@ void setup() {
 }
 
 void loop() {
-  // ANT1 (aufgedruckte 9) sendet das 'A'
+  // Pin 106 (aufgedruckte 9) sendet das 'A'
   if (digitalRead(ANT1) == LOW) {
     tapKey(HID_KEY_A); 
     waitForRelease(ANT1);
   }
 
-  // ANT2 (aufgedruckte 10) sendet den Scroll-Befehl
+  // Pin 104 (aufgedruckte 10) sendet den Scroll-Befehl nach unten
   if (digitalRead(ANT2) == LOW) {
     tapKey(HID_KEY_ARROW_DOWN);   
     waitForRelease(ANT2);
