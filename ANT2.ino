@@ -32,19 +32,16 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // --- HIER DIE ENTSCHEIDENDE ERWEITERUNG FÜR DEN VERBINDUNGS-AUFBAU ---
-  // Wir aktivieren die Verschlüsselung, die Handys für Tastaturen erzwingen.
-  // "SEC_MODE_ENC_NO_MITM" bedeutet: Verschlüsselt, aber ohne PIN-Eingabe am Display.
-  Bluefruit.Security.setPairingMod(CONN_SECMODE_SET_ENC_NO_MITM);
-
-  // Name hochgezählt auf Version 06 gegen den Cache!
-  Bluefruit.setName("Birger DIY 06");
+  // NAME GEÄNDERT: Wir zählen sauber weiter auf Version 07!
+  Bluefruit.setName("Birger DIY 07");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // Initialisiert die Tastatur-Schnittstelle
+  // HIER DIE KORREKTUR: Wir zwingen das Tastatur-Profil in den verschlüsselten Modus,
+  // den deine Library-Version verlangt.
+  blehid.setPermission(SECMODE_ENC_NO_MITM);
   blehid.begin();
 
   // Advertising einrichten
