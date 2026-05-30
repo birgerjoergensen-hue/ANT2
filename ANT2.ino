@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 36
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 37
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,12 +7,11 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-// JETZT DIE ECHTEN HARDWARE-PINS (Port 1):
-// 106 entspricht GPIO 38, 104 entspricht GPIO 36
-const int ANT1 = 38;  // Beschriftung "9" (Hardware P1.06)
-const int ANT2 = 36;  // Beschriftung "10" (Hardware P1.04)
+// LAUT DIAGRAMM GENAU DIE UNTEREN LINKEN PINS:
+const int ANT1 = 9;   // Label D9 (Hardware P1.06) -> Sendet 'A'
+const int ANT2 = 8;   // Label D8 (Hardware P1.04) -> Sendet Scroll-Down
 const int ANT3 = 16;  // Reserve
-const int ANT4 = 8;   // Reserve
+const int ANT4 = 10;  // Label D10 (Hardware P0.09) -> Ganz unten rechts
 
 const int MY_LED_RED  = 15; 
 const int MY_LED_BLUE = 17;
@@ -76,7 +75,6 @@ void waitForRelease(int pin) {
 }
 
 void setup() {
-  // Jetzt werden die echten Port-1-Leitungen unter Strom gesetzt!
   pinMode(ANT1, INPUT_PULLUP);
   pinMode(ANT2, INPUT_PULLUP);
   pinMode(ANT3, INPUT_PULLUP);
@@ -93,8 +91,8 @@ void setup() {
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // IMMER WEITERGEZÄHLT: Version 36
-  Bluefruit.setName("Birger DIY 36");
+  // IMMER WEITERGEZÄHLT: Version 37
+  Bluefruit.setName("Birger DIY 37");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -113,13 +111,13 @@ void setup() {
 }
 
 void loop() {
-  // Pin 106 (aufgedruckte 9) sendet das 'A'
+  // Überbrücke den Pin ganz unten links (D9) gegen GND -> tippt ein 'A'
   if (digitalRead(ANT1) == LOW) {
     tapKey(HID_KEY_A); 
     waitForRelease(ANT1);
   }
 
-  // Pin 104 (aufgedruckte 10) sendet den Scroll-Befehl nach unten
+  // Überbrücke den Pin direkt darüber (D8) gegen GND -> Scrollt nach unten
   if (digitalRead(ANT2) == LOW) {
     tapKey(HID_KEY_ARROW_DOWN);   
     waitForRelease(ANT2);
