@@ -27,48 +27,6 @@ void startAdv(void)
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
-
-  // Name direkt im Advertising-Paket
   Bluefruit.Advertising.addName();
 
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);
-  Bluefruit.Advertising.setFastTimeout(30);
-  Bluefruit.Advertising.start(0);
-}
-
-void connect_callback(uint16_t conn_handle)
-{
-  (void) conn_handle;
-  digitalWrite(MY_LED_RED, HIGH);   // aus
-  digitalWrite(MY_LED_BLUE, LOW);   // an
-}
-
-void disconnect_callback(uint16_t conn_handle, uint8_t reason)
-{
-  (void) conn_handle;
-  (void) reason;
-
-  digitalWrite(MY_LED_BLUE, HIGH);  // aus
-  startAdv();
-}
-
-void tapKey(uint8_t keycode)
-{
-  if (!Bluefruit.connected()) return;
-
-  blehid.keyPress(keycode);
-  delay(50);
-  blehid.keyRelease();
-}
-
-void waitForRelease(int pin)
-{
-  while (digitalRead(pin) == LOW) {
-    delay(10);
-  }
-}
-
-void setup()
-{
-  pinMode(ANT1, INPUT_PULLUP);
