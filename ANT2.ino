@@ -9,8 +9,6 @@ const int ANT2 = 10; // Pin D10 (unten rechts)
 const int ANT3 = 16; // Pin D16 (über ANT2, rechts)
 const int ANT4 = 8;  // Pin D8  (über ANT1, links)
 
-bool usbConnected = false;
-
 void setup() {
   pinMode(ANT1, INPUT_PULLUP);
   pinMode(ANT2, INPUT_PULLUP);
@@ -18,8 +16,9 @@ void setup() {
   pinMode(ANT4, INPUT_PULLUP);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4); 
+  Bluefruit.setTxPower(4); // Maximale Sendeleistung
 
+  // Dein Wunschname im Bluetooth-Netzwerk
   Bluefruit.setName("Birgers DIY");
 
   bledis.setManufacturer("GEMMI Tech");
@@ -28,6 +27,7 @@ void setup() {
 
   blehid.begin();
 
+  // Advertising (Funkbarke) einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_GENERIC_HID);
@@ -35,40 +35,27 @@ void setup() {
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244); 
+  Bluefruit.Advertising.setInterval(32, 244); // Schnelle Intervalle für flinkes Pairing
 
-  // Saubere Abfrage über die TinyUSB-Bibliothek
-  if (TinyUSBDevice.ready()) {
-    usbConnected = true;
-    Bluefruit.Advertising.start(0); // Dauer-Senden EIN am Kabel (Kein Brücken nötig!)
-  } else {
-    usbConnected = false; // Stromsparen EIN (Warten auf Tastendruck an Batterie)
-  }
+  // JETZT GANZ EINFACH: Bei jedem Start/Reset 120 Sekunden dauerhaft senden!
+  // Danach schaltet sich das Funkmodul von alleine ab, um Batterie zu sparen.
+  Bluefruit.Advertising.start(120); 
 }
 
 void loop() {
-  // Überwachung der USB-Quelle im laufenden Betrieb
-  if (usbConnected && !TinyUSBDevice.ready()) {
-    usbConnected = false;
-    Bluefruit.Advertising.stop(); // Kabel gezogen -> Stromsparen an
-  }
-  if (!usbConnected && TinyUSBDevice.ready()) {
-    usbConnected = true;
-    Bluefruit.Advertising.start(0); // Kabel eingesteckt -> Dauer-Funk an
-  }
-
-  // ANT1 (D9) -> Weckt Funk bei Batterie kurz auf und schickt "Seite zurück"
+  // ANT1 (D9) -> Weckt Funk bei Bedarf kurz auf und schickt "Seite zurück"
   if (digitalRead(ANT1) == LOW) {
-    if (!usbConnected) { Bluefruit.Advertising.start(5); } 
+    // Falls der Timer abgelaufen ist, für 5 Sekunden Funk einschalten
+    if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS);
-    delay(50);
+    delay(50); // Entprellen
     blehid.consumerKeyRelease();
-    while (digitalRead(ANT1) == LOW) { delay(10); }
+    while (digitalRead(ANT1) == LOW) { delay(10); } // Warten bis losgelassen
   }
 
-  // ANT2 (D10) -> Weckt Funk bei Batterie kurz auf und schickt "Seite vor"
+  // ANT2 (D10) -> Weckt Funk bei Bedarf kurz auf und schickt "Seite vor"
   if (digitalRead(ANT2) == LOW) {
-    if (!usbConnected) { Bluefruit.Advertising.start(5); }
+    if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT);
     delay(50);
     blehid.consumerKeyRelease();
@@ -85,10 +72,6 @@ void loop() {
     while (digitalRead(ANT4) == LOW) { delay(10); }
   }
 
-  // Taktung je nach Stromquelle
-  if (!usbConnected) {
-    delay(100); // Tiefschlaf auf Batterie (extrem stromsparend)
-  } else {
-    delay(10);  // Schnelle Reaktion am USB-Kabel
-  }
+  // Generelles Stromsparen im Loop (100ms Schlafpause)
+  delay(100); 
 }
