@@ -32,16 +32,15 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // NAME GEÄNDERT: Wir zählen sauber weiter auf Version 07!
-  Bluefruit.setName("Birger DIY 07");
+  // NAME GEÄNDERT: Wir zählen sauber weiter auf Version 08!
+  Bluefruit.setName("Birger DIY 08");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // HIER DIE KORREKTUR: Wir zwingen das Tastatur-Profil in den verschlüsselten Modus,
-  // den deine Library-Version verlangt.
-  blehid.setPermission(SECMODE_ENC_NO_MITM);
+  // HIER DIE KORREKTUR: Beide Argumente (Lesen und Schreiben) werden verschlüsselt
+  blehid.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
   blehid.begin();
 
   // Advertising einrichten
