@@ -1,5 +1,4 @@
 #include <bluefruit.h>
-#include <InternalFileSystem.h>
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
@@ -30,11 +29,6 @@ void setup() {
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
-  // Internes Dateisystem initialisieren und radikal formatieren.
-  // Das löscht ALLE im Flash gespeicherten Bluetooth-Kopplungen (Bonds).
-  InternalFS.begin();
-  InternalFS.format();
-
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
@@ -46,8 +40,8 @@ void setup() {
 
   blehid.begin();
 
-  // Advertising einrichten
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  // JETZT OFFEN FÜR ALLE: Wir zwingen das Board in den ungeschützten Suchmodus
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
@@ -56,7 +50,7 @@ void setup() {
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
 
-  // Bei jedem Start/Reset 120 Sekunden dauerhaft senden
+  // Bei jedem Start 120 Sekunden dauerhaft senden
   Bluefruit.Advertising.start(120); 
 }
 
