@@ -1,123 +1,25 @@
-// =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 25
-// =================================================================
+Run REAL_FQBN="adafruit:nrf52:feather52840sense"
+/home/runner/work/ANT2/ANT2/ANT2.ino: In function 'void setup()':
+/home/runner/work/ANT2/ANT2/ANT2.ino:82:36: error: no matching function for call to 'BLESecurity::setIOCaps(int)'
+   82 |   Bluefruit.Security.setIOCaps(0x03);
+      |                                    ^
+In file included from /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Bluefruit52Lib/src/bluefruit.h:58,
+                 from /home/runner/work/ANT2/ANT2/ANT2.ino:5:
+/home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Bluefruit52Lib/src/BLESecurity.h:51:10: note: candidate: 'void BLESecurity::setIOCaps(bool, bool, bool)'
+   51 |     void setIOCaps(bool display, bool yes_no, bool keyboard);
+      |          ^~~~~~~~~
+/home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Bluefruit52Lib/src/BLESecurity.h:51:10: note:   candidate expects 3 arguments, 1 provided
 
-#include <bluefruit.h>
+Error during build: exit status 1
 
-BLEDis bledis;
-BLEHidAdafruit blehid;
+Used library                                     Version Path                                                                                             
+Adafruit Bluefruit nRF52 Libraries               0.21.0  /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Bluefruit52Lib          
+Adafruit nRFCrypto                               0.1.2   /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Adafruit_nRFCrypto      
+Adafruit TinyUSB Library                         3.6.0   /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Adafruit_TinyUSB_Arduino
+SPI                                              1.0     /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/SPI                     
+Adafruit Little File System Libraries            0.11.0  /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/Adafruit_LittleFS       
+Adafruit Internal File System on Bluefruit nRF52 0.11.0  /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/libraries/InternalFileSytem       
 
-const int ANT1 = 9;
-const int ANT2 = 10;
-const int ANT3 = 16;
-const int ANT4 = 8;
-
-void startAdv(void) {
-  Bluefruit.Advertising.stop();
-  Bluefruit.Advertising.clearData();
-  Bluefruit.ScanResponse.clearData();
-
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
-  Bluefruit.Advertising.addService(blehid);
-  Bluefruit.Advertising.addName();
-
-  Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);
-  Bluefruit.Advertising.setFastTimeout(30);
-  Bluefruit.Advertising.start(0); 
-}
-
-void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status) {
-  (void) conn_handle;
-  (void) auth_status;
-}
-
-void connection_secured_callback(uint16_t conn_handle) {
-  (void) conn_handle;
-}
-
-void connect_callback(uint16_t conn_handle) {
-  BLEConnection* connection = Bluefruit.Connection(conn_handle);
-  if (connection != NULL) {
-    if (!connection->secured()) {
-      connection->requestPairing();
-    }
-  }
-}
-
-void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
-  (void) conn_handle;
-  (void) reason;
-  startAdv();
-}
-
-void tapKey(uint8_t keycode) {
-  if (!Bluefruit.connected()) {
-    return;
-  }
-  blehid.keyPress(keycode);
-  delay(50);
-  blehid.keyRelease();
-}
-
-void waitForRelease(int pin) {
-  while (digitalRead(pin) == LOW) {
-    delay(10);
-  }
-}
-
-void setup() {
-  pinMode(ANT1, INPUT_PULLUP);
-  pinMode(ANT2, INPUT_PULLUP);
-  pinMode(ANT3, INPUT_PULLUP);
-  pinMode(ANT4, INPUT_PULLUP);
-
-  Bluefruit.begin();
-  Bluefruit.setTxPower(4);
-  
-  // 0x03 ist der direkte Hardware-Code für "Kein Display/Keine Tastatur".
-  // Das umgeht alle fehlenden Namen in der Library-Version!
-  Bluefruit.Security.setIOCaps(0x03); 
-  Bluefruit.Security.setMITM(false);
-
-  // NAME UNVERÄNDERT HOCHGEZÄHLT: Version 25
-  Bluefruit.setName("Birger DIY 25");
-
-  // Deine Koppel-Callbacks registrieren
-  Bluefruit.Periph.setConnectCallback(connect_callback);
-  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
-  Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback);
-  Bluefruit.Security.setSecuredCallback(connection_secured_callback);
-
-  bledis.setManufacturer("GEMMI Tech");
-  bledis.setModel("Blipbox v4");
-  bledis.begin();
-
-  blehid.begin();
-
-  startAdv();
-}
-
-void loop() {
-  if (digitalRead(ANT1) == LOW) {
-    tapKey(HID_KEY_ARROW_LEFT);
-    waitForRelease(ANT1);
-  }
-
-  if (digitalRead(ANT2) == LOW) {
-    tapKey(HID_KEY_ARROW_RIGHT);
-    waitForRelease(ANT2);
-  }
-
-  if (digitalRead(ANT3) == LOW) {
-    waitForRelease(ANT3);
-  }
-
-  if (digitalRead(ANT4) == LOW) {
-    waitForRelease(ANT4);
-  }
-
-  delay(10);
-}
+Used platform  Version Path                                                          
+adafruit:nrf52 1.7.0   /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0
+Error: Process completed with exit code 1.
