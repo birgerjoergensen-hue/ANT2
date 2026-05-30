@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 22
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 23
 // =================================================================
 
 #include <bluefruit.h>
@@ -77,13 +77,13 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
-  // --- ZUSÄTZLICHE RETTUNGSANKER FÜR DIE VERBINDUNG ---
-  // Sagt dem Board, dass es neue Koppelungen erzwingen und alte Fehler ignorieren soll
-  Bluefruit.Security.setIOCaps(MITM_IOCAPS_NONE); 
+  // --- REPARIERTE KOPIER-SICHERHEIT ---
+  // BLE_GAP_IOC_CAP_NONE ist der exakte Name, den deine Library-Version verlangt
+  Bluefruit.Security.setIOCaps(BLE_GAP_IOC_CAP_NONE); 
   Bluefruit.Security.setMITM(false);
 
-  // NAME GEÄNDERT UND IMMER WEITERGEZÄHLT: Version 22
-  Bluefruit.setName("Birger DIY 22");
+  // NAME ERHÖHT: Version 23 ist scharfgeschaltet!
+  Bluefruit.setName("Birger DIY 23");
 
   // Callbacks registrieren
   Bluefruit.Periph.setConnectCallback(connect_callback);
