@@ -15,7 +15,7 @@ const int MY_LED_BLUE = 17;
 
 // Timer-Variablen für das LED-Blinken
 unsigned long previousMillis = 0;
-const long blinkInterval = 300; 
+const long blinkInterval = 200; // Etwas schnelleres Blinken für bessere Sichtbarkeit
 bool ledState = HIGH;           
 
 void setup() {
@@ -26,7 +26,10 @@ void setup() {
 
   pinMode(MY_LED_RED, OUTPUT);
   pinMode(MY_LED_BLUE, OUTPUT);
-  digitalWrite(MY_LED_RED, HIGH);
+  
+  // Rote LED DAUERHAFT EIN (LOW schaltet die LED beim nice!nano ein)
+  digitalWrite(MY_LED_RED, LOW);
+  // Blaue LED am Anfang AUS (HIGH ist aus)
   digitalWrite(MY_LED_BLUE, HIGH);
 
   Bluefruit.begin();
@@ -40,58 +43,11 @@ void setup() {
 
   blehid.begin();
 
-  // JETZT OFFEN FÜR ALLE: Wir zwingen das Board in den ungeschützten Suchmodus
+  // Ungeschützter Suchmodus für Wahoo/Coros
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAG_BR_EDR_NOT_SUPPORTED);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
-  Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244); 
-
-  // Bei jedem Start 120 Sekunden dauerhaft senden
-  Bluefruit.Advertising.start(120); 
-}
-
-void loop() {
-  unsigned long currentMillis = millis();
-
-  // --- LED BLINK-LOGIK ---
-  if (Bluefruit.Advertising.isRunning() && !Bluefruit.connected()) {
-    if (currentMillis - previousMillis >= blinkInterval) {
-      previousMillis = currentMillis;
-      ledState = !ledState; 
-      digitalWrite(MY_LED_RED, ledState); 
-    }
-  } else {
-    digitalWrite(MY_LED_RED, HIGH); 
-  }
-
-  // --- KNOPF-ABFRAGEN ---
-  if (digitalRead(ANT1) == LOW) {
-    if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS);
-    delay(50); 
-    blehid.consumerKeyRelease();
-    while (digitalRead(ANT1) == LOW) { delay(10); } 
-  }
-
-  if (digitalRead(ANT2) == LOW) {
-    if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT);
-    delay(50);
-    blehid.consumerKeyRelease();
-    while (digitalRead(ANT2) == LOW) { delay(10); }
-  }
-
-  if (digitalRead(ANT3) == LOW) {
-    while (digitalRead(ANT3) == LOW) { delay(10); }
-  }
-
-  if (digitalRead(ANT4) == LOW) {
-    while (digitalRead(ANT4) == LOW) { delay(10); }
-  }
-
-  delay(10); 
-}
+  Bluefruit.Advertising.
