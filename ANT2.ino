@@ -13,7 +13,7 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4); // Maximale Sendeleistung
 
-  // Dein neuer Wunschname im Bluetooth-Netzwerk
+  // Dein Wunschname
   Bluefruit.setName("Birgers DIY");
 
   bledis.setManufacturer("GEMMI Tech");
@@ -26,13 +26,13 @@ void setup() {
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   
-  // Wir nutzen die offizielle Fernbedienungs-Kennung (HID Remote), die Wahoos lieber mögen
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_REMOTE);
+  // Zurück zur funktionierenden Keyboard-Kennung
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
   
   Bluefruit.Advertising.addName();
   
-  // Verbindungseinstellungen optimieren
+  // Verbindungseinstellungen für schnelle Entdeckung
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
   Bluefruit.Advertising.setFastTimeout(30);
