@@ -3,7 +3,6 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-// Taster
 const int ANT1 = 9;
 const int ANT2 = 10;
 const int ANT3 = 16;
@@ -41,7 +40,10 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 void tapKey(uint8_t keycode)
 {
-  if (!Bluefruit.connected()) return;
+  if (!Bluefruit.connected())
+  {
+    return;
+  }
 
   blehid.keyPress(keycode);
   delay(50);
@@ -65,22 +67,6 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
-  Bluefruit.setName("Birger DIY 15");
+  Bluefruit.setName("Birger DIY 16");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
-  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
-
-  bledis.setManufacturer("GEMMI Tech");
-  bledis.setModel("Blipbox v4");
-  bledis.begin();
-
-  blehid.begin();
-
-  startAdv();
-}
-
-void loop()
-{
-  if (digitalRead(ANT1) == LOW)
-  {
-    tapKey(HID_KEY_ARROW_LEFT);
