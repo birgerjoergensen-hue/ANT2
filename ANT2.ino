@@ -37,22 +37,22 @@ void setup() {
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
 
-  // HIER PASSIERT DIE MAGIE: Steckt USB beim Start?
-  if (NRF_POWER->REGSTATUS & 1) {
+  // Saubere Abfrage über die TinyUSB-Bibliothek
+  if (TinyUSBDevice.ready()) {
     usbConnected = true;
-    Bluefruit.Advertising.start(0); // Dauer-Senden AN (Kein Brücken nötig!)
+    Bluefruit.Advertising.start(0); // Dauer-Senden EIN am Kabel (Kein Brücken nötig!)
   } else {
-    usbConnected = false; // Stromsparen AN (Warten auf Tastendruck)
+    usbConnected = false; // Stromsparen EIN (Warten auf Tastendruck an Batterie)
   }
 }
 
 void loop() {
-  // Automatische Erkennung im laufenden Betrieb
-  if (usbConnected && !(NRF_POWER->REGSTATUS & 1)) {
+  // Überwachung der USB-Quelle im laufenden Betrieb
+  if (usbConnected && !TinyUSBDevice.ready()) {
     usbConnected = false;
-    Bluefruit.Advertising.stop(); // Kabel gezogen -> Stromsparen aktivieren
+    Bluefruit.Advertising.stop(); // Kabel gezogen -> Stromsparen an
   }
-  if (!usbConnected && (NRF_POWER->REGSTATUS & 1)) {
+  if (!usbConnected && TinyUSBDevice.ready()) {
     usbConnected = true;
     Bluefruit.Advertising.start(0); // Kabel eingesteckt -> Dauer-Funk an
   }
