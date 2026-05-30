@@ -25,20 +25,20 @@ void setup() {
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // Hier starten wir die HID-Bibliothek
+  // Startet die HID-Bibliothek (beinhaltet Keyboard und Consumer Control)
   blehid.begin();
 
   // Advertising (Funkbarke) einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   
-  // Wichtig: Wir tarnen uns als Consumer-Fernbedienung
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_CONSUMER_CONTROL);
+  // Universelle HID-Kennung, die in dieser Library-Version existiert
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_GENERIC_HID);
   Bluefruit.Advertising.addService(blehid);
   
   Bluefruit.Advertising.addName();
   
-  // Aggressives Senden für schnelles Pairing mit dem Radcomputer
+  // Schnelles Senden für zügiges Pairing
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
   Bluefruit.Advertising.setFastTimeout(30);
@@ -48,7 +48,7 @@ void setup() {
 void loop() {
   // ANT1 (D9) -> "Vorheriger Titel" (Wahoo blättert Seite zurück)
   if (digitalRead(ANT1) == LOW) {
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS_TRACK);
+    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS);
     delay(50); // Entprellen
     blehid.consumerKeyRelease();
     while (digitalRead(ANT1) == LOW) { delay(10); } // Warten bis losgelassen
@@ -56,13 +56,13 @@ void loop() {
 
   // ANT2 (D10) -> "Nächster Titel" (Wahoo blättert Seite vor)
   if (digitalRead(ANT2) == LOW) {
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT_TRACK);
+    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT);
     delay(50);
     blehid.consumerKeyRelease();
     while (digitalRead(ANT2) == LOW) { delay(10); }
   }
 
-  // ANT3 (D16) & ANT4 (D8) halten wir sauber bereit ohne komplexe Schaltung
+  // ANT3 (D16) & ANT4 (D8) halten wir sauber im Hintergrund bereit
   if (digitalRead(ANT3) == LOW) {
     // Platzhalter für spätere Belegung
     while (digitalRead(ANT3) == LOW) { delay(10); }
