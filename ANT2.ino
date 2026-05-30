@@ -1,10 +1,9 @@
 // =================================================================
-// PROJEKT: Birger DIY 53 (Variablen-Fix & Board 2 Optimierung)
+// PROJEKT: Birger DIY 54 (Timing & Bluetooth Start-Fix)
 // =================================================================
 #include <bluefruit.h>
 #include <hal/nrf_gpio.h>
 
-// Globale Objekte wiederhergestellt
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
@@ -12,7 +11,6 @@ BLEHidAdafruit blehid;
 #define PIN_D9       NRF_GPIO_PIN_MAP(1, 6)
 #define RED_LED      NRF_GPIO_PIN_MAP(0, 15)
 
-// LED Logik für Board 2 (Invertiert)
 const bool INVERT_LED = true; 
 
 void setLed(bool on) {
@@ -20,18 +18,21 @@ void setLed(bool on) {
 }
 
 void setup() {
+  // WICHTIG: Bluetooth Zeit zum Starten geben
+  delay(3000); 
+
   Bluefruit.begin();
   Bluefruit.setAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   
   bledis.begin();
   blehid.begin();
   
-  Bluefruit.setName("Birger DIY 53");
+  Bluefruit.setName("Birger DIY 54");
   
   nrf_gpio_cfg_input(PIN_D9, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_input(PIN_D8, NRF_GPIO_PIN_PULLUP);
   nrf_gpio_cfg_output(RED_LED);
-  setLed(false); // Aus
+  setLed(false); 
 
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addService(blehid);
