@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 33
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 34
 // =================================================================
 
 #include <bluefruit.h>
@@ -90,8 +90,8 @@ void setup() {
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // IMMER WEITERGEZÄHLT: Version 33
-  Bluefruit.setName("Birger DIY 33");
+  // WEITERGEZÄHLT: Version 34 am Start
+  Bluefruit.setName("Birger DIY 34");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -110,14 +110,15 @@ void setup() {
 }
 
 void loop() {
-  // HIER JETZT DIE ECHTEN SCROLL-BEFEHLE FÜR DAS SMARTPHONE
+  // ANT1 (Pin 9) sendet jetzt stur den Buchstaben 'A' zum Testen im Textfeld
   if (digitalRead(ANT1) == LOW) {
-    tapKey(HID_KEY_ARROW_DOWN); // <--- Scrollt nach unten (nächster Inhalt)
+    tapKey(HID_KEY_A); 
     waitForRelease(ANT1);
   }
 
+  // ANT2 (Pin 10) sendet weiterhin den Scroll-Befehl nach unten
   if (digitalRead(ANT2) == LOW) {
-    tapKey(HID_KEY_ARROW_UP);   // <--- Scrollt nach oben (vorheriger Inhalt)
+    tapKey(HID_KEY_ARROW_DOWN);   
     waitForRelease(ANT2);
   }
 
