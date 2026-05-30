@@ -29,26 +29,28 @@ void setup() {
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
-  // USB-Blocker entfernt! Wir starten direkt rein mit Bluefruit
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // WIE BESPROCHEN: Name sauber auf Version 05 erhöht!
-  Bluefruit.setName("Birger DIY 05");
+  // --- HIER DIE ENTSCHEIDENDE ERWEITERUNG FÜR DEN VERBINDUNGS-AUFBAU ---
+  // Wir aktivieren die Verschlüsselung, die Handys für Tastaturen erzwingen.
+  // "SEC_MODE_ENC_NO_MITM" bedeutet: Verschlüsselt, aber ohne PIN-Eingabe am Display.
+  Bluefruit.Security.setPairingMod(CONN_SECMODE_SET_ENC_NO_MITM);
+
+  // Name hochgezählt auf Version 06 gegen den Cache!
+  Bluefruit.setName("Birger DIY 06");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // Initialisiert die Tastatur-Schnittstelle im Bluetooth-Protokoll
+  // Initialisiert die Tastatur-Schnittstelle
   blehid.begin();
 
-  // Advertising sauber einrichten
+  // Advertising einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
-  
-  // WICHTIG: Erst das HID-Tastatur-Profil an den Funk anhängen!
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
@@ -75,7 +77,7 @@ void loop() {
 
   // --- KNOPF-ABFRAGEN ---
 
-  // ANT1 (D9) -> Pfeiltaste Links (Seite zurück)
+  // ANT1 (D9) -> Pfeiltaste Links
   if (digitalRead(ANT1) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.keyPress(HID_KEY_ARROW_LEFT);
@@ -84,7 +86,7 @@ void loop() {
     while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
 
-  // ANT2 (D10) -> Pfeiltaste Rechts (Seite vor)
+  // ANT2 (D10) -> Pfeiltaste Rechts
   if (digitalRead(ANT2) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
     blehid.keyPress(HID_KEY_ARROW_RIGHT);
