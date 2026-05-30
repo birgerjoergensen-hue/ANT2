@@ -1,4 +1,5 @@
 #include <bluefruit.h>
+#include <InternalFileSystem.h>
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
@@ -29,12 +30,13 @@ void setup() {
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
+  // Internes Dateisystem initialisieren und radikal formatieren.
+  // Das löscht ALLE im Flash gespeicherten Bluetooth-Kopplungen (Bonds).
+  InternalFS.begin();
+  InternalFS.format();
+
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
-
-  // RADIKALER RESET: Löscht alle gespeicherten Handys/Geräte aus dem Speicher!
-  // Das zwingt das Board, komplett jungfräulich zu funken.
-  Bluefruit.clearBonds();
 
   Bluefruit.setName("Birgers DIY");
 
@@ -51,11 +53,10 @@ void setup() {
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
-  // Wichtig für Tachos: Kein automatisches Reconnecten zu alten blockierten Geräten
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
 
-  // Startet das ununterbrochene Senden für 120 Sekunden
+  // Bei jedem Start/Reset 120 Sekunden dauerhaft senden
   Bluefruit.Advertising.start(120); 
 }
 
