@@ -13,8 +13,8 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4); // Maximale Sendeleistung
 
-  // Hier wird der Name global gesetzt
-  Bluefruit.setName("Blipbox BLE");
+  // Dein neuer Wunschname im Bluetooth-Netzwerk
+  Bluefruit.setName("Birgers DIY");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
@@ -25,15 +25,16 @@ void setup() {
   // Advertising (Funkbarke) einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
+  
+  // Wir nutzen die offizielle Fernbedienungs-Kennung (HID Remote), die Wahoos lieber mögen
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_REMOTE);
   Bluefruit.Advertising.addService(blehid);
   
-  // Das fügt den oben gesetzten Namen jetzt fehlerfrei hinzu (ohne Text in den Klammern)
   Bluefruit.Advertising.addName();
   
-  // Schnelles Pairing aktivieren
+  // Verbindungseinstellungen optimieren
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244); // Schneller Verbindungsaufbau
+  Bluefruit.Advertising.setInterval(32, 244); 
   Bluefruit.Advertising.setFastTimeout(30);
   Bluefruit.Advertising.start(0); 
 }
@@ -55,5 +56,5 @@ void loop() {
     while (digitalRead(BUTTON_RIGHT) == LOW) { delay(10); }
   }
 
-  delay(10); // Stromsparen im Loop
+  delay(10); // Stromsparen
 }
