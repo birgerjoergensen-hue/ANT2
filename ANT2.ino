@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 39
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 40
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,7 +7,9 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-unsigned long lastSendTime = 0;
+// Wir nutzen die absolut sichere Port-1-Übersetzung der nRF52-Core-Architektur
+#define PIN_P1_06 (32 + 6)  // Entspricht D9 (unten links)
+#define PIN_P1_04 (32 + 4)  // Entspricht D8 (direkt darüber)
 
 void startAdv(void) {
   Bluefruit.Advertising.stop();
@@ -21,7 +23,8 @@ void startAdv(void) {
   Bluefruit.Advertising.addName();
 
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(16, 112); // Schnellere Intervalle für stabilere Übertragung
+  Bluefruit.Advertising.setInterval(32, 244);
+  Bluefruit.Advertising.setFastTimeout(30);
   Bluefruit.Advertising.start(0); 
 }
 
@@ -49,25 +52,19 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
   startAdv();
 }
 
-// Optimierte Sende-Funktion, die dem Handy explizit sagt: "Taste gedrückt UND losgelassen!"
-void sendAutopilotKey() {
-  if (!Bluefruit.connected()) {
-    return;
-  }
-  
-  // Wir nutzen keySequence, das feuert den Buchstaben garantiert sofort ab
-  blehid.keySequence("a"); 
-}
-
 void setup() {
+  // Direktes Ansprechen der Port-1-Register als INPUT_PULLUP
+  pinMode(PIN_P1_06, INPUT_PULLUP);
+  pinMode(PIN_P1_04, INPUT_PULLUP);
+
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // NAME HOCHGEZÄHLT: Version 39
-  Bluefruit.setName("Birger DIY 39");
+  // NAME ERHÖHT: Version 40 (Der Befreier)
+  Bluefruit.setName("Birger DIY 40");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -81,15 +78,23 @@ void setup() {
   blehid.begin();
 
   startAdv();
-  
-  lastSendTime = millis();
 }
 
 void loop() {
-  // AUTOPILOT: Jede 5 Sekunden (5000 Millisekunden) wird stur ein "A" gesendet
-  if (millis() - lastSendTime >= 5000) {
-    sendAutopilotKey();
-    lastSendTime = millis();
+  // Wenn D9 (P1.06) gegen GND überbrückt wird
+  if (digitalRead(PIN_P1_06) == LOW) {
+    blehid.keySequence("a"); // Feuert das 'A' mit sofortigem Release-Report ab
+    delay(100);
+    while (digitalRead(PIN_P1_06) == LOW) { delay(10); }
+  }
+
+  // Wenn D8 (P1.04) gegen GND überbrückt wird
+  if (digitalRead(PIN_P1_04) == LOW) {
+    blehid.keyPress(HID_KEY_ARROW_DOWN);
+    delay(50);
+    blehid.keyRelease();
+    delay(100);
+    while (digitalRead(PIN_P1_04) == LOW) { delay(10); }
   }
 
   delay(10);
