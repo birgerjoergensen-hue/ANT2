@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 29
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 30
 // =================================================================
 
 #include <bluefruit.h>
@@ -74,11 +74,10 @@ void setup() {
   pinMode(ANT3, INPUT_PULLUP);
   pinMode(ANT4, INPUT_PULLUP);
 
-  // --- DIE RADIKALKUR FÜR VERSION 29 (REPARIERT) ---
-  // Initialisiert das interne Dateisystem und formatiert es.
-  // Das löscht alle alten Verschlüsselungs-Dateien (Bonds) physisch vom Chip!
-  InternalFileSys.begin();
-  InternalFileSys.format();
+  // --- DER KORRIGIERTE SPEICHER-RESET ---
+  // InternalFS ist der richtige Objektname für deine Library-Kombination!
+  InternalFS.begin();
+  InternalFS.format();
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
@@ -87,8 +86,8 @@ void setup() {
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // NAME ERHÖHT: Version 29
-  Bluefruit.setName("Birger DIY 29");
+  // STUR HOCHGEZÄHLT: Version 30
+  Bluefruit.setName("Birger DIY 30");
 
   // Callbacks registrieren
   Bluefruit.Periph.setConnectCallback(connect_callback);
