@@ -22,7 +22,7 @@ void startAdv(void) {
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244);
   Bluefruit.Advertising.setFastTimeout(30);
-  Bluefruit.Advertising.start(0); // 0 = Unendlich senden, bis Verbindung steht
+  Bluefruit.Advertising.start(0); 
 }
 
 void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status) {
@@ -73,13 +73,18 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
-  // EISERN WEITERGEZÄHLT: Version 20 ist am Start!
-  Bluefruit.setName("Birger DIY 20");
+  // HIER DIE ENTSCHEIDENDE ERGÄNZUNG FÜR VERSION 21:
+  // Wir sagen dem nRF52-Chip, dass er Verschlüsselung ohne Display (Just Works) beherrscht.
+  // Ohne diese Zeile verweigert das Handy nach dem requestPairing() die dauerhafte Verbindung!
+  Bluefruit.Security.setIOCaps(MITM_IOCAPS_NONE); 
 
-  // Callbacks registrieren - Hier jetzt mit dem korrekten "setPairCompleteCallback"
+  // STUR HOCHGEZÄHLT: Version 21 gegen den Cache
+  Bluefruit.setName("Birger DIY 21");
+
+  // Deine Callbacks sauber registriert
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
-  Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback); // <--- REPARIERT!
+  Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback);
   Bluefruit.Security.setSecuredCallback(connection_secured_callback);
 
   bledis.setManufacturer("GEMMI Tech");
