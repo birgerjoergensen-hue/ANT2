@@ -29,20 +29,20 @@ void setup() {
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
-  // Wichtig: TinyUSB vor dem Bluetooth-Start initialisieren
+  // TinyUSB vor dem Bluetooth-Start initialisieren
   TinyUSBDevice.begin();
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // NAME ERHÖHT: Verhindert, dass alte Cache-Leichen die Erkennung blockieren
-  Bluefruit.setName("Birger DIY 33");
+  // Name erhöht auf 03 gegen den Cache
+  Bluefruit.setName("Birger DIY 303");
 
-  bledis.setManufacturer("GEMMI Tech")
+  bledis.setManufacturer("GEMMI Tech"); // <--- Semikolon repariert!
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // Schaltet das HID-Protokoll (Tastatur) sauber frei
+  // Schaltet das HID-Protokoll (Tastatur) frei
   blehid.begin();
 
   // Advertising einrichten
@@ -73,7 +73,7 @@ void loop() {
     digitalWrite(MY_LED_RED, HIGH); 
   }
 
-  // --- KNOPF-ABFRAGEN MIT DETEKTIERBAREN SIGNALEN ---
+  // --- KNOPF-ABFRAGEN ---
 
   // ANT1 (D9) -> Pfeiltaste Links
   if (digitalRead(ANT1) == LOW) {
