@@ -36,9 +36,9 @@ void setup() {
   Bluefruit.setTxPower(4); 
 
   // NAME ERHÖHT: Verhindert, dass alte Cache-Leichen die Erkennung blockieren
-  Bluefruit.setName("Birger DIY 03");
+  Bluefruit.setName("Birger DIY 33");
 
-  bledis.setManufacturer("GEMMI Tech");
+  bledis.setManufacturer("GEMMI Tech")
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
