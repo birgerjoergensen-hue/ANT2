@@ -9,16 +9,33 @@ const int ANT2 = 10; // Pin D10 (unten rechts)
 const int ANT3 = 16; // Pin D16 (über ANT2, rechts)
 const int ANT4 = 8;  // Pin D8  (über ANT1, links)
 
+// LED-Pins auf dem nice!nano v2
+const int LED_RED  = 15; 
+const int LED_BLUE = 17;
+
+// Timer-Variablen für das LED-Blinken (ohne den Code zu blockieren)
+unsigned long previousMillis = 0;
+const long blinkInterval = 300; // Blink-Geschwindigkeit in Millisekunden (alle 0,3 Sek.)
+bool ledState = HIGH;           // HIGH ist bei den nice!nano LEDs meistens "AUS", LOW ist "AN"
+
 void setup() {
+  // Knöpfe einrichten
   pinMode(ANT1, INPUT_PULLUP);
   pinMode(ANT2, INPUT_PULLUP);
   pinMode(ANT3, INPUT_PULLUP);
   pinMode(ANT4, INPUT_PULLUP);
 
-  Bluefruit.begin();
-  Bluefruit.setTxPower(4); // Maximale Sendeleistung
+  // LEDs als Ausgang definieren
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
+  
+  // Am Anfang beide LEDs ausschalten (beim nice!nano schaltet HIGH die LED aus)
+  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_BLUE, HIGH);
 
-  // Dein Wunschname im Bluetooth-Netzwerk
+  Bluefruit.begin();
+  Bluefruit.setTxPower(4); 
+
   Bluefruit.setName("Birgers DIY");
 
   bledis.setManufacturer("GEMMI Tech");
@@ -27,33 +44,48 @@ void setup() {
 
   blehid.begin();
 
-  // Advertising (Funkbarke) einrichten
+  // Advertising einrichten (Tastatur-Tarnung für Wahoo/Coros)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_GENERIC_HID);
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244); // Schnelle Intervalle für flinkes Pairing
+  Bluefruit.Advertising.setInterval(32, 244); 
 
-  // JETZT GANZ EINFACH: Bei jedem Start/Reset 120 Sekunden dauerhaft senden!
-  // Danach schaltet sich das Funkmodul von alleine ab, um Batterie zu sparen.
+  // Startet den 120-Sekunden-Timer für das Koppeln
   Bluefruit.Advertising.start(120); 
 }
 
 void loop() {
-  // ANT1 (D9) -> Weckt Funk bei Bedarf kurz auf und schickt "Seite zurück"
+  unsigned long currentMillis = millis();
+
+  // --- LED BLINK-LOGIK ---
+  // Wenn das Board aktiv im Kopplungsmodus (Advertising) ist und kein Gerät verbunden ist:
+  if (Bluefruit.Advertising.isRunning() && !Bluefruit.connected()) {
+    if (currentMillis - previousMillis >= blinkInterval) {
+      previousMillis = currentMillis;
+      ledState = !ledState; // Zustand umkehren
+      digitalWrite(LED_RED, ledState); // Rote LED blinkt
+    }
+  } else {
+    // Wenn die 2 Minuten um sind ODER ein Tacho verbunden ist -> Rote LED dauerhaft AUS
+    digitalWrite(LED_RED, HIGH); 
+  }
+
+  // --- KNOPF-ABFRAGEN ---
+
+  // ANT1 (D9) -> "Vorheriger Titel" (Seite zurück)
   if (digitalRead(ANT1) == LOW) {
-    // Falls der Timer abgelaufen ist, für 5 Sekunden Funk einschalten
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS);
     delay(50); // Entprellen
     blehid.consumerKeyRelease();
-    while (digitalRead(ANT1) == LOW) { delay(10); } // Warten bis losgelassen
+    while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
 
-  // ANT2 (D10) -> Weckt Funk bei Bedarf kurz auf und schickt "Seite vor"
+  // ANT2 (D10) -> "Nächster Titel" (Seite vor)
   if (digitalRead(ANT2) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT);
@@ -72,6 +104,5 @@ void loop() {
     while (digitalRead(ANT4) == LOW) { delay(10); }
   }
 
-  // Generelles Stromsparen im Loop (100ms Schlafpause)
-  delay(100); 
+  delay(10); // Leicht verkürzt für präziseres LED-Timing
 }
