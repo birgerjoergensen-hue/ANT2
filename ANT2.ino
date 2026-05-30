@@ -29,33 +29,33 @@ void setup() {
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
-  // TinyUSB vor dem Bluetooth-Start initialisieren
-  TinyUSBDevice.begin();
-
+  // USB-Blocker entfernt! Wir starten direkt rein mit Bluefruit
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // Name erhöht auf 03 gegen den Cache
-  Bluefruit.setName("Birger DIY 303");
+  // WIE BESPROCHEN: Name sauber auf Version 05 erhöht!
+  Bluefruit.setName("Birger DIY 05");
 
-  bledis.setManufacturer("GEMMI Tech"); // <--- Semikolon repariert!
+  bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // Schaltet das HID-Protokoll (Tastatur) frei
+  // Initialisiert die Tastatur-Schnittstelle im Bluetooth-Protokoll
   blehid.begin();
 
-  // Advertising einrichten
+  // Advertising sauber einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
+  
+  // WICHTIG: Erst das HID-Tastatur-Profil an den Funk anhängen!
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
 
-  // 120 Sekunden Sendezeit beim Start
+  // 120 Sekunden Koppel-Zeit beim Start
   Bluefruit.Advertising.start(120); 
 }
 
@@ -75,7 +75,7 @@ void loop() {
 
   // --- KNOPF-ABFRAGEN ---
 
-  // ANT1 (D9) -> Pfeiltaste Links
+  // ANT1 (D9) -> Pfeiltaste Links (Seite zurück)
   if (digitalRead(ANT1) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.keyPress(HID_KEY_ARROW_LEFT);
@@ -84,7 +84,7 @@ void loop() {
     while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
 
-  // ANT2 (D10) -> Pfeiltaste Rechts
+  // ANT2 (D10) -> Pfeiltaste Rechts (Seite vor)
   if (digitalRead(ANT2) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
     blehid.keyPress(HID_KEY_ARROW_RIGHT);
