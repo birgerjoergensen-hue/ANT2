@@ -30,30 +30,29 @@ void setup() {
   digitalWrite(MY_LED_BLUE, HIGH);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4); // Maximale Sendeleistung
+  Bluefruit.setTxPower(4); 
 
-  // HIER DER NEUE NAME: Bei jedem Versuch ändern wir hier die Nummer am Ende!
-  Bluefruit.setName("Birger DIY 01");
+  // NAME ERHÖHT: Zwingt alle Geräte, den Cache komplett zu erneuern
+  Bluefruit.setName("Birger DIY 02");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
+  // Initialisiert das HID-Profil vollständig
   blehid.begin();
 
   // Advertising sauber einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  
-  // Geänderte Kennung: Als Remote-Keyring wird das Board von Tachos seltener blockiert
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_GENERIC_KEYRING);
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
 
-  // Bei jedem Start 120 Sekunden dauerhaft senden
+  // 120 Sekunden Koppel-Zeit beim Start
   Bluefruit.Advertising.start(120); 
 }
 
@@ -71,22 +70,23 @@ void loop() {
     digitalWrite(MY_LED_RED, HIGH); 
   }
 
-  // --- KNOPF-ABFRAGEN ---
-  // ANT1 (D9) -> "Vorheriger Titel" (Brücke Pin 9 nach GND)
+  // --- KNOPF-ABFRAGEN MIT ECHTEN TASTEN ---
+
+  // ANT1 (D9) -> Pfeiltaste Links (Seite zurück)
   if (digitalRead(ANT1) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS);
-    delay(50); 
-    blehid.consumerKeyRelease();
+    blehid.keyPress(HID_KEY_ARROW_LEFT);
+    delay(50); // Entprellen
+    blehid.keyRelease();
     while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
 
-  // ANT2 (D10) -> "Nächster Titel" (Brücke Pin 10 nach GND)
+  // ANT2 (D10) -> Pfeiltaste Rechts (Seite vor)
   if (digitalRead(ANT2) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT);
+    blehid.keyPress(HID_KEY_ARROW_RIGHT);
     delay(50);
-    blehid.consumerKeyRelease();
+    blehid.keyRelease();
     while (digitalRead(ANT2) == LOW) { delay(10); }
   }
 
