@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 37
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 38
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,14 +7,9 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-// LAUT DIAGRAMM GENAU DIE UNTEREN LINKEN PINS:
-const int ANT1 = 9;   // Label D9 (Hardware P1.06) -> Sendet 'A'
-const int ANT2 = 8;   // Label D8 (Hardware P1.04) -> Sendet Scroll-Down
-const int ANT3 = 16;  // Reserve
-const int ANT4 = 10;  // Label D10 (Hardware P0.09) -> Ganz unten rechts
-
-const int MY_LED_RED  = 15; 
-const int MY_LED_BLUE = 17;
+// Wir definieren ein Array aus Pins für die linke Platinenseite
+const int BUCHSTABE_PINS[] = {6, 8, 9};   // Alle unteren linken Pins (D6, D8, D9)
+const int SCROLL_PINS[]    = {2, 3, 4};   // Alle oberen linken Pins (D2, D3, D4)
 
 void startAdv(void) {
   Bluefruit.Advertising.stop();
@@ -36,7 +31,6 @@ void startAdv(void) {
 void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status) {
   (void) conn_handle;
   (void) auth_status;
-  digitalWrite(MY_LED_BLUE, LOW); 
 }
 
 void connection_secured_callback(uint16_t conn_handle) {
@@ -55,7 +49,6 @@ void connect_callback(uint16_t conn_handle) {
 void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
   (void) conn_handle;
   (void) reason;
-  digitalWrite(MY_LED_BLUE, HIGH); 
   startAdv();
 }
 
@@ -68,22 +61,12 @@ void tapKey(uint8_t keycode) {
   blehid.keyRelease();
 }
 
-void waitForRelease(int pin) {
-  while (digitalRead(pin) == LOW) {
-    delay(10);
-  }
-}
-
 void setup() {
-  pinMode(ANT1, INPUT_PULLUP);
-  pinMode(ANT2, INPUT_PULLUP);
-  pinMode(ANT3, INPUT_PULLUP);
-  pinMode(ANT4, INPUT_PULLUP);
-
-  pinMode(MY_LED_RED, OUTPUT);
-  pinMode(MY_LED_BLUE, OUTPUT);
-  digitalWrite(MY_LED_RED, HIGH);
-  digitalWrite(MY_LED_BLUE, HIGH);
+  // Alle Test-Pins als INPUT_PULLUP konfigurieren
+  for (int i = 0; i < 3; i++) {
+    pinMode(BUCHSTABE_PINS[i], INPUT_PULLUP);
+    pinMode(SCROLL_PINS[i], INPUT_PULLUP);
+  }
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
@@ -91,8 +74,8 @@ void setup() {
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // IMMER WEITERGEZÄHLT: Version 37
-  Bluefruit.setName("Birger DIY 37");
+  // NAME HOCHGEZÄHLT: Version 38
+  Bluefruit.setName("Birger DIY 38");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -106,21 +89,23 @@ void setup() {
   blehid.begin();
 
   startAdv();
-  
-  digitalWrite(MY_LED_RED, LOW);
 }
 
 void loop() {
-  // Überbrücke den Pin ganz unten links (D9) gegen GND -> tippt ein 'A'
-  if (digitalRead(ANT1) == LOW) {
-    tapKey(HID_KEY_A); 
-    waitForRelease(ANT1);
+  // 1. Prüfen, ob IRGENDEINER der unteren linken Pins gegen GND gezogen wird
+  for (int i = 0; i < 3; i++) {
+    if (digitalRead(BUCHSTABE_PINS[i]) == LOW) {
+      tapKey(HID_KEY_A); // Sendet ein 'A'
+      while (digitalRead(BUCHSTABE_PINS[i]) == LOW) { delay(10); } // Warten auf Loslassen
+    }
   }
 
-  // Überbrücke den Pin direkt darüber (D8) gegen GND -> Scrollt nach unten
-  if (digitalRead(ANT2) == LOW) {
-    tapKey(HID_KEY_ARROW_DOWN);   
-    waitForRelease(ANT2);
+  // 2. Prüfen, ob IRGENDEINER der oberen linken Pins gegen GND gezogen wird
+  for (int i = 0; i < 3; i++) {
+    if (digitalRead(SCROLL_PINS[i]) == LOW) {
+      tapKey(HID_KEY_ARROW_DOWN); // Scrollt nach unten
+      while (digitalRead(SCROLL_PINS[i]) == LOW) { delay(10); } // Warten auf Loslassen
+    }
   }
 
   delay(10);
