@@ -1,4 +1,4 @@
-name: Arduino Compile to UF2 (nice!nano)
+name: Arduino Compile to UF2 (nice!nano BLE)
 
 on: [push]
 
@@ -19,27 +19,20 @@ jobs:
         run: |
           pip3 install pyserial adafruit-nrfutil
 
-      - name: Install Community Board Core
+      - name: Install nRF52 Board Core
         run: |
-          # Das nice!nano nutzt den offiziellen Community-Core für nRF52-Boards
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
       - name: Compile Code & Convert to UF2
         run: |
-          # Umstellung auf die exakte Board-Definition des nice!nano
-          REAL_FQBN="adafruit:nrf52:nicenano"
+          REAL_FQBN="adafruit:nrf52:feather52840sense"
           
-          # 1. Normal kompilieren für das richtige Board
-          arduino-cli compile --fqbn "$REAL_FQBN" \
-            --build-property "compiler.cpp.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
-            --build-property "compiler.c.extra_flags=-DSOFTDEVICE_PRESENT -DS340" \
-            --output-dir ./build ./ANT2.ino
+          # Sauberer Standard-Build ohne riskante ANT-Flags
+          arduino-cli compile --fqbn "$REAL_FQBN" --output-dir ./build ./ANT2.ino
           
-          # 2. Konvertierung mit dem passenden Skript
+          # Konvertierung zu UF2
           ADAFRUIT_UF2_SCRIPT="$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py"
-          
-          # Family-ID 0xada52840 bleibt für den nRF52840 gleich
           python3 "$ADAFRUIT_UF2_SCRIPT" ./build/ANT2.ino.hex -c -f 0xada52840 -o ./build/ANT2.ino.uf2
 
       - name: Upload UF2 Firmware
