@@ -73,13 +73,13 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
-  // IMMER WEITERZÄHLEN: Version 19 scharf geschaltet!
-  Bluefruit.setName("Birger DIY 19");
+  // EISERN WEITERGEZÄHLT: Version 20 ist am Start!
+  Bluefruit.setName("Birger DIY 20");
 
-  // HIER DIE WICHTIGE ERGÄNZUNG: Deine Callbacks müssen dem System auch zugewiesen werden!
+  // Callbacks registrieren - Hier jetzt mit dem korrekten "setPairCompleteCallback"
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
-  Bluefruit.Security.setPairingCompleteCallback(pairing_complete_callback);
+  Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback); // <--- REPARIERT!
   Bluefruit.Security.setSecuredCallback(connection_secured_callback);
 
   bledis.setManufacturer("GEMMI Tech");
@@ -92,7 +92,6 @@ void setup() {
 }
 
 void loop() {
-  // Knöpfe abfragen und deine "tapKey"-Funktion nutzen
   if (digitalRead(ANT1) == LOW) {
     tapKey(HID_KEY_ARROW_LEFT);
     waitForRelease(ANT1);
