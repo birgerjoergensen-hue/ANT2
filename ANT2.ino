@@ -29,20 +29,23 @@ void setup() {
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
+  // Wichtig: TinyUSB vor dem Bluetooth-Start initialisieren
+  TinyUSBDevice.begin();
+
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // NAME ERHÖHT: Zwingt alle Geräte, den Cache komplett zu erneuern
-  Bluefruit.setName("Birger DIY 02");
+  // NAME ERHÖHT: Verhindert, dass alte Cache-Leichen die Erkennung blockieren
+  Bluefruit.setName("Birger DIY 03");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // Initialisiert das HID-Profil vollständig
+  // Schaltet das HID-Protokoll (Tastatur) sauber frei
   blehid.begin();
 
-  // Advertising sauber einrichten
+  // Advertising einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
@@ -52,7 +55,7 @@ void setup() {
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244); 
 
-  // 120 Sekunden Koppel-Zeit beim Start
+  // 120 Sekunden Sendezeit beim Start
   Bluefruit.Advertising.start(120); 
 }
 
@@ -70,9 +73,9 @@ void loop() {
     digitalWrite(MY_LED_RED, HIGH); 
   }
 
-  // --- KNOPF-ABFRAGEN MIT ECHTEN TASTEN ---
+  // --- KNOPF-ABFRAGEN MIT DETEKTIERBAREN SIGNALEN ---
 
-  // ANT1 (D9) -> Pfeiltaste Links (Seite zurück)
+  // ANT1 (D9) -> Pfeiltaste Links
   if (digitalRead(ANT1) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.keyPress(HID_KEY_ARROW_LEFT);
@@ -81,7 +84,7 @@ void loop() {
     while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
 
-  // ANT2 (D10) -> Pfeiltaste Rechts (Seite vor)
+  // ANT2 (D10) -> Pfeiltaste Rechts
   if (digitalRead(ANT2) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
     blehid.keyPress(HID_KEY_ARROW_RIGHT);
