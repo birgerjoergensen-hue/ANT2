@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 38
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 39
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,9 +7,7 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-// Wir definieren ein Array aus Pins für die linke Platinenseite
-const int BUCHSTABE_PINS[] = {6, 8, 9};   // Alle unteren linken Pins (D6, D8, D9)
-const int SCROLL_PINS[]    = {2, 3, 4};   // Alle oberen linken Pins (D2, D3, D4)
+unsigned long lastSendTime = 0;
 
 void startAdv(void) {
   Bluefruit.Advertising.stop();
@@ -23,8 +21,7 @@ void startAdv(void) {
   Bluefruit.Advertising.addName();
 
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);
-  Bluefruit.Advertising.setFastTimeout(30);
+  Bluefruit.Advertising.setInterval(16, 112); // Schnellere Intervalle für stabilere Übertragung
   Bluefruit.Advertising.start(0); 
 }
 
@@ -52,30 +49,25 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
   startAdv();
 }
 
-void tapKey(uint8_t keycode) {
+// Optimierte Sende-Funktion, die dem Handy explizit sagt: "Taste gedrückt UND losgelassen!"
+void sendAutopilotKey() {
   if (!Bluefruit.connected()) {
     return;
   }
-  blehid.keyPress(keycode);
-  delay(50);
-  blehid.keyRelease();
+  
+  // Wir nutzen keySequence, das feuert den Buchstaben garantiert sofort ab
+  blehid.keySequence("a"); 
 }
 
 void setup() {
-  // Alle Test-Pins als INPUT_PULLUP konfigurieren
-  for (int i = 0; i < 3; i++) {
-    pinMode(BUCHSTABE_PINS[i], INPUT_PULLUP);
-    pinMode(SCROLL_PINS[i], INPUT_PULLUP);
-  }
-
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // NAME HOCHGEZÄHLT: Version 38
-  Bluefruit.setName("Birger DIY 38");
+  // NAME HOCHGEZÄHLT: Version 39
+  Bluefruit.setName("Birger DIY 39");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -89,23 +81,15 @@ void setup() {
   blehid.begin();
 
   startAdv();
+  
+  lastSendTime = millis();
 }
 
 void loop() {
-  // 1. Prüfen, ob IRGENDEINER der unteren linken Pins gegen GND gezogen wird
-  for (int i = 0; i < 3; i++) {
-    if (digitalRead(BUCHSTABE_PINS[i]) == LOW) {
-      tapKey(HID_KEY_A); // Sendet ein 'A'
-      while (digitalRead(BUCHSTABE_PINS[i]) == LOW) { delay(10); } // Warten auf Loslassen
-    }
-  }
-
-  // 2. Prüfen, ob IRGENDEINER der oberen linken Pins gegen GND gezogen wird
-  for (int i = 0; i < 3; i++) {
-    if (digitalRead(SCROLL_PINS[i]) == LOW) {
-      tapKey(HID_KEY_ARROW_DOWN); // Scrollt nach unten
-      while (digitalRead(SCROLL_PINS[i]) == LOW) { delay(10); } // Warten auf Loslassen
-    }
+  // AUTOPILOT: Jede 5 Sekunden (5000 Millisekunden) wird stur ein "A" gesendet
+  if (millis() - lastSendTime >= 5000) {
+    sendAutopilotKey();
+    lastSendTime = millis();
   }
 
   delay(10);
