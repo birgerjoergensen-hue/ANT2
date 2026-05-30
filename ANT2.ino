@@ -30,9 +30,10 @@ void setup() {
   digitalWrite(MY_LED_BLUE, HIGH);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4); 
+  Bluefruit.setTxPower(4); // Maximale Sendeleistung
 
-  Bluefruit.setName("Birgers DIY");
+  // HIER DER NEUE NAME: Bei jedem Versuch ändern wir hier die Nummer am Ende!
+  Bluefruit.setName("Birger DIY 01");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
@@ -43,7 +44,9 @@ void setup() {
   // Advertising sauber einrichten
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
+  
+  // Geänderte Kennung: Als Remote-Keyring wird das Board von Tachos seltener blockiert
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_GENERIC_KEYRING);
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
@@ -69,6 +72,7 @@ void loop() {
   }
 
   // --- KNOPF-ABFRAGEN ---
+  // ANT1 (D9) -> "Vorheriger Titel" (Brücke Pin 9 nach GND)
   if (digitalRead(ANT1) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_PREVIOUS);
@@ -77,6 +81,7 @@ void loop() {
     while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
 
+  // ANT2 (D10) -> "Nächster Titel" (Brücke Pin 10 nach GND)
   if (digitalRead(ANT2) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); }
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_SCAN_NEXT);
@@ -85,10 +90,12 @@ void loop() {
     while (digitalRead(ANT2) == LOW) { delay(10); }
   }
 
+  // ANT3 (D16) - Bereit gehalten
   if (digitalRead(ANT3) == LOW) {
     while (digitalRead(ANT3) == LOW) { delay(10); }
   }
 
+  // ANT4 (D8) - Bereit gehalten
   if (digitalRead(ANT4) == LOW) {
     while (digitalRead(ANT4) == LOW) { delay(10); }
   }
