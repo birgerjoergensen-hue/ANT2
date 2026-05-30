@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 40
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 41
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,9 +7,8 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-// Wir nutzen die absolut sichere Port-1-Übersetzung der nRF52-Core-Architektur
-#define PIN_P1_06 (32 + 6)  // Entspricht D9 (unten links)
-#define PIN_P1_04 (32 + 4)  // Entspricht D8 (direkt darüber)
+// Wir nutzen im Setup KEINE festen Port-1-Zahlen mehr, um den Boot-Konflikt zu lösen.
+// Die Zuweisung erfolgt sauber über die Standard-Makros D8 und D9 im loop.
 
 void startAdv(void) {
   Bluefruit.Advertising.stop();
@@ -53,18 +52,19 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
 }
 
 void setup() {
-  // Direktes Ansprechen der Port-1-Register als INPUT_PULLUP
-  pinMode(PIN_P1_06, INPUT_PULLUP);
-  pinMode(PIN_P1_04, INPUT_PULLUP);
+  // Initialisiere die Pins über die sicheren Arduino-Bezeichnungen
+  pinMode(D9, INPUT_PULLUP);
+  pinMode(D8, INPUT_PULLUP);
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
+  // No-PIN-Security Modus für schnellen Handshake
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // NAME ERHÖHT: Version 40 (Der Befreier)
-  Bluefruit.setName("Birger DIY 40");
+  // NAME ERHÖHT: Version 41 (Frischer Koppel-Versuch)
+  Bluefruit.setName("Birger DIY 41");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -81,20 +81,20 @@ void setup() {
 }
 
 void loop() {
-  // Wenn D9 (P1.06) gegen GND überbrückt wird
-  if (digitalRead(PIN_P1_06) == LOW) {
-    blehid.keySequence("a"); // Feuert das 'A' mit sofortigem Release-Report ab
+  // Unten links: D9 (Hardware P1.06) -> Sendet das 'A'
+  if (digitalRead(D9) == LOW) {
+    blehid.keySequence("a"); 
     delay(100);
-    while (digitalRead(PIN_P1_06) == LOW) { delay(10); }
+    while (digitalRead(D9) == LOW) { delay(10); }
   }
 
-  // Wenn D8 (P1.04) gegen GND überbrückt wird
-  if (digitalRead(PIN_P1_04) == LOW) {
+  // Direkt darüber: D8 (Hardware P1.04) -> Sendet Scrollen
+  if (digitalRead(D8) == LOW) {
     blehid.keyPress(HID_KEY_ARROW_DOWN);
     delay(50);
     blehid.keyRelease();
     delay(100);
-    while (digitalRead(PIN_P1_04) == LOW) { delay(10); }
+    while (digitalRead(D8) == LOW) { delay(10); }
   }
 
   delay(10);
