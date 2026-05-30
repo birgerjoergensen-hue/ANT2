@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 32
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 33
 // =================================================================
 
 #include <bluefruit.h>
@@ -12,7 +12,6 @@ const int ANT2 = 10;
 const int ANT3 = 16;
 const int ANT4 = 8;
 
-// LEDs deiner nice!nano v2 zur optischen Kontrolle
 const int MY_LED_RED  = 15; 
 const int MY_LED_BLUE = 17;
 
@@ -36,7 +35,6 @@ void startAdv(void) {
 void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status) {
   (void) conn_handle;
   (void) auth_status;
-  // Bei erfolgreichem Koppel-Handshake leuchtet Blau auf
   digitalWrite(MY_LED_BLUE, LOW); 
 }
 
@@ -47,7 +45,6 @@ void connection_secured_callback(uint16_t conn_handle) {
 void connect_callback(uint16_t conn_handle) {
   BLEConnection* connection = Bluefruit.Connection(conn_handle);
   if (connection != NULL) {
-    // Wenn das Handy anklopft, fordern wir aktiv den sicheren Schlüssel an
     if (!connection->secured()) {
       connection->requestPairing();
     }
@@ -57,7 +54,7 @@ void connect_callback(uint16_t conn_handle) {
 void disconnect_callback(uint16_t conn_handle, uint8_t reason) {
   (void) conn_handle;
   (void) reason;
-  digitalWrite(MY_LED_BLUE, HIGH); // Blau aus bei Trennung
+  digitalWrite(MY_LED_BLUE, HIGH); 
   startAdv();
 }
 
@@ -84,21 +81,18 @@ void setup() {
 
   pinMode(MY_LED_RED, OUTPUT);
   pinMode(MY_LED_BLUE, OUTPUT);
-  // LEDs aus (HIGH = Aus bei der nice!nano)
   digitalWrite(MY_LED_RED, HIGH);
   digitalWrite(MY_LED_BLUE, HIGH);
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
-  // Die 3 Schalter im exakten Format für deine Library-Version (0.21.0)
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // STUR HOCHGEZÄHLT: Version 32 bricht den Cache!
-  Bluefruit.setName("Birger DIY 32");
+  // IMMER WEITERGEZÄHLT: Version 33
+  Bluefruit.setName("Birger DIY 33");
 
-  // Callbacks für die sichere Verbindung registrieren
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
   Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback);
@@ -112,18 +106,18 @@ void setup() {
 
   startAdv();
   
-  // Rote LED an: Setup ohne Absturz überstanden!
   digitalWrite(MY_LED_RED, LOW);
 }
 
 void loop() {
+  // HIER JETZT DIE ECHTEN SCROLL-BEFEHLE FÜR DAS SMARTPHONE
   if (digitalRead(ANT1) == LOW) {
-    tapKey(HID_KEY_ARROW_LEFT);
+    tapKey(HID_KEY_ARROW_DOWN); // <--- Scrollt nach unten (nächster Inhalt)
     waitForRelease(ANT1);
   }
 
   if (digitalRead(ANT2) == LOW) {
-    tapKey(HID_KEY_ARROW_RIGHT);
+    tapKey(HID_KEY_ARROW_UP);   // <--- Scrollt nach oben (vorheriger Inhalt)
     waitForRelease(ANT2);
   }
 
