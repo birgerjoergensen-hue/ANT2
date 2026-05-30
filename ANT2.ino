@@ -13,6 +13,9 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4); // Maximale Sendeleistung
 
+  // Hier wird der Name global gesetzt
+  Bluefruit.setName("Blipbox BLE");
+
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
@@ -24,7 +27,9 @@ void setup() {
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   Bluefruit.Advertising.addService(blehid);
-  Bluefruit.Advertising.addName("Blipbox BLE");
+  
+  // Das fügt den oben gesetzten Namen jetzt fehlerfrei hinzu (ohne Text in den Klammern)
+  Bluefruit.Advertising.addName();
   
   // Schnelles Pairing aktivieren
   Bluefruit.Advertising.restartOnDisconnect(true);
