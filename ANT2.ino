@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 40.1 (HID-Fix)
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 42 (Mit LED-Feedback)
 // =================================================================
 
 #include <bluefruit.h>
@@ -9,6 +9,9 @@ BLEHidAdafruit blehid;
 
 #define PIN_P1_06 (32 + 6)  // Entspricht D9 (unten links)
 #define PIN_P1_04 (32 + 4)  // Entspricht D8 (direkt darüber)
+
+// Die rote LED deiner nice!nano v2
+const int MY_LED_RED = 15;  
 
 void startAdv(void) {
   Bluefruit.Advertising.stop();
@@ -55,14 +58,18 @@ void setup() {
   pinMode(PIN_P1_06, INPUT_PULLUP);
   pinMode(PIN_P1_04, INPUT_PULLUP);
 
+  // LED initialisieren und ausschalten (HIGH = Aus bei der nice!nano)
+  pinMode(MY_LED_RED, OUTPUT);
+  digitalWrite(MY_LED_RED, HIGH);
+
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // BLEIBT AUF 40, DAMIT DEIN HANDY VERBUNDEN BLEIBT!
-  Bluefruit.setName("Birger DIY 40");
+  // NEUER NAME: Version 42
+  Bluefruit.setName("Birger DIY 42");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -79,22 +86,32 @@ void setup() {
 }
 
 void loop() {
-  // D9 (P1.06) -> Sendet das 'A' als rohen Tastencode
+  // D9 (P1.06) -> Sendet das 'A'
   if (digitalRead(PIN_P1_06) == LOW) {
+    digitalWrite(MY_LED_RED, LOW); // Rote LED AN
+    
     blehid.keyPress(HID_KEY_A);
     delay(50);
     blehid.keyRelease();
-    delay(200); // 200ms Pause, damit das Handy das Signal sauber verarbeitet
-    while (digitalRead(PIN_P1_06) == LOW) { delay(10); } // Warten, bis Pin losgelassen wird
+    delay(200); 
+    
+    while (digitalRead(PIN_P1_06) == LOW) { delay(10); } // Warten, bis Kontakt gelöst ist
+    
+    digitalWrite(MY_LED_RED, HIGH); // Rote LED wieder AUS
   }
 
   // D8 (P1.04) -> Sendet Scrollen
   if (digitalRead(PIN_P1_04) == LOW) {
+    digitalWrite(MY_LED_RED, LOW); // Rote LED AN
+    
     blehid.keyPress(HID_KEY_ARROW_DOWN);
     delay(50);
     blehid.keyRelease();
     delay(200);
-    while (digitalRead(PIN_P1_04) == LOW) { delay(10); }
+    
+    while (digitalRead(PIN_P1_04) == LOW) { delay(10); } // Warten, bis Kontakt gelöst ist
+    
+    digitalWrite(MY_LED_RED, HIGH); // Rote LED wieder AUS
   }
 
   delay(10);
