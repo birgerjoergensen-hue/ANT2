@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 34
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 35
 // =================================================================
 
 #include <bluefruit.h>
@@ -7,10 +7,12 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-const int ANT1 = 9;
-const int ANT2 = 10;
-const int ANT3 = 16;
-const int ANT4 = 8;
+// Wir nutzen die offiziellen Arduino-Board-Definitionen für die analogen/digitalen Pins.
+// Das übersetzt die aufgedruckte "9" und "10" in die echten nRF52-GPIO-Nummern!
+const int ANT1 = A1;  // Entspricht meistens Pin 9 / A1 auf dem Board
+const int ANT2 = A2;  // Entspricht meistens Pin 10 / A2 auf dem Board
+const int ANT3 = A3;  // Reserve
+const int ANT4 = A0;  // Reserve
 
 const int MY_LED_RED  = 15; 
 const int MY_LED_BLUE = 17;
@@ -74,6 +76,7 @@ void waitForRelease(int pin) {
 }
 
 void setup() {
+  // Verkoppelung der Pins mit internem Pullup-Widerstand
   pinMode(ANT1, INPUT_PULLUP);
   pinMode(ANT2, INPUT_PULLUP);
   pinMode(ANT3, INPUT_PULLUP);
@@ -90,8 +93,8 @@ void setup() {
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // WEITERGEZÄHLT: Version 34 am Start
-  Bluefruit.setName("Birger DIY 34");
+  // STUR HOCHGEZÄHLT: Version 35 am Start
+  Bluefruit.setName("Birger DIY 35");
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -110,24 +113,16 @@ void setup() {
 }
 
 void loop() {
-  // ANT1 (Pin 9) sendet jetzt stur den Buchstaben 'A' zum Testen im Textfeld
+  // ANT1 (aufgedruckte 9) sendet das 'A'
   if (digitalRead(ANT1) == LOW) {
     tapKey(HID_KEY_A); 
     waitForRelease(ANT1);
   }
 
-  // ANT2 (Pin 10) sendet weiterhin den Scroll-Befehl nach unten
+  // ANT2 (aufgedruckte 10) sendet den Scroll-Befehl
   if (digitalRead(ANT2) == LOW) {
     tapKey(HID_KEY_ARROW_DOWN);   
     waitForRelease(ANT2);
-  }
-
-  if (digitalRead(ANT3) == LOW) {
-    waitForRelease(ANT3);
-  }
-
-  if (digitalRead(ANT4) == LOW) {
-    waitForRelease(ANT4);
   }
 
   delay(10);
