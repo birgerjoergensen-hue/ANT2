@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Blipbox v4 - VERSION: Birger DIY 27
+// PROJEKT: Blipbox v4 - VERSION: Birger DIY 28
 // =================================================================
 
 #include <bluefruit.h>
@@ -74,15 +74,20 @@ void setup() {
   pinMode(ANT3, INPUT_PULLUP);
   pinMode(ANT4, INPUT_PULLUP);
 
+  // --- DIE RADIKALKUR FÜR VERSION 28 ---
+  // Löscht ALLE alten Koppelungsschlüssel aus dem Flash-Speicher des nRF52.
+  // Das zwingt das Board, die Verschlüsselung mit dem Handy komplett neu aufzubauen!
   Bluefruit.begin();
+  Bluefruit.clearBonds(); 
+
   Bluefruit.setTxPower(4);
   
-  // Die 3 korrekten Schalter für deine Library-Version
+  // Die 3 Schalter für deine Library-Version
   Bluefruit.Security.setIOCaps(false, false, false); 
   Bluefruit.Security.setMITM(false);
 
-  // IMMER WEITERGEZÄHLT: Version 27
-  Bluefruit.setName("Birger DIY 27");
+  // NAME ERHÖHT: Version 28
+  Bluefruit.setName("Birger DIY 28");
 
   // Callbacks registrieren
   Bluefruit.Periph.setConnectCallback(connect_callback);
