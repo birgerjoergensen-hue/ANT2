@@ -32,15 +32,21 @@ void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4); 
 
-  // NAME GEÄNDERT: Wir zählen sauber weiter auf Version 08!
-  Bluefruit.setName("Birger DIY 08");
+  // --- DIE SYSTEMWEITE VERSCHLÜSSELUNG FÜR DEINE LIBRARY ---
+  // 1. Wir sagen dem Handy: "Ich habe kein Display und keine Tastatur für PIN-Eingaben" (Just Works Modus)
+  Bluefruit.Security.setIOCaps(MITE_IOCAPS_NONE); 
+  
+  // 2. Wir aktivieren das automatische Verschlüsseln bei der Kopplung
+  Bluefruit.Security.setPairingPasskeyRequired(false);
+
+  // NAME GEÄNDERT: Sauber hochgezählt auf Version 09!
+  Bluefruit.setName("Birger DIY 09");
 
   bledis.setManufacturer("GEMMI Tech");
   bledis.setModel("Blipbox v4");
   bledis.begin();
 
-  // HIER DIE KORREKTUR: Beide Argumente (Lesen und Schreiben) werden verschlüsselt
-  blehid.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
+  // Die HID-Tastatur starten
   blehid.begin();
 
   // Advertising einrichten
@@ -77,7 +83,7 @@ void loop() {
   if (digitalRead(ANT1) == LOW) {
     if (!Bluefruit.Advertising.isRunning()) { Bluefruit.Advertising.start(5); } 
     blehid.keyPress(HID_KEY_ARROW_LEFT);
-    delay(50); // Entprellen
+    delay(50); 
     blehid.keyRelease();
     while (digitalRead(ANT1) == LOW) { delay(10); } 
   }
