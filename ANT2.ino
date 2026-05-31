@@ -1,24 +1,19 @@
-// =================================================================
-// PROJEKT: Birger DIY 31v07 (Offene UART-Brücke)
-// =================================================================
 #include <bluefruit.h>
 
-BLEUart bleuart; 
-
 void setup() {
+  // Starte Bluetooth
   Bluefruit.begin();
-  Bluefruit.setName("Birger DIY 31v07");
   
-  // UART-Service ist der "Türöffner" für fast alle Systeme
-  bleuart.begin();
+  // Setze einen eindeutigen Namen, den du sofort wiedererkennst
+  Bluefruit.setName("Birger_31v08");
   
+  // Advertising starten (Broadcast-Modus)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addService(bleuart);
   Bluefruit.Advertising.addName();
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // Kein Code, wir wollen nur die stabile Verbindung
+  // Nichts tun, einfach nur sichtbar bleiben
   delay(1000);
 }
