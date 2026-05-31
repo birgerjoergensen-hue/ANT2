@@ -35,3 +35,10 @@ jobs:
         with:
           name: firmware-dateien
           path: ./build/*
+
+          - name: Kompilieren und in UF2 wandeln
+        run: |
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+          # Hier ist der Automatisierungsschritt:
+          # Wir suchen die .hex Datei und konvertieren sie sofort
+          /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -f 0xada52840 -c -o ./build/firmware.uf2 ./build/*.hex
