@@ -1,9 +1,13 @@
+// ==========================================
+// DEINE VERSIONIERUNG: 31v29 (ANT+ SHIFTING)
+// ==========================================
 #include <ANT.h> 
 
 #define DEVICE_TYPE_SHIFTING 0x04 
 #define CHANNEL_NUMBER 0
 
 void setup() {
+  // ANT Kanal für Shifting öffnen
   ANT.begin(CHANNEL_NUMBER, DEVICE_TYPE_SHIFTING, 0x1234, 1);
 }
 
