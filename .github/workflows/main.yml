@@ -15,39 +15,24 @@ jobs:
       - name: Code auschecken
         uses: actions/checkout@v4
 
-      - name: Python für adafruit-nrfutil einrichten
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: adafruit-nrfutil installieren
-        run: |
-          pip install adafruit-nrfutil
-
       - name: Arduino CLI einrichten
         uses: arduino/setup-arduino-cli@v2
 
-      - name: Adafruit Board-Manager hinzufügen und installieren
+      - name: Adafruit Board-Manager hinzufügen
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Versionsnummer aus ANT2.ino auslesen
+      - name: ANTPlus Library installieren
         run: |
-          # Liest die Version aus und entfernt eventuelle unsichtbare Zeilenumbüche
-          CLEAN_VERSION=$(grep -oP 'String versionsNummer = "\K[^"]+' ANT2.ino | tr -d '\r\n' || echo "unknown")
-          echo "VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
+          arduino-cli lib install "ANTPlus"
 
       - name: Sketch kompilieren
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
-      - name: UF2 Datei generieren
-        run: |
-          python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -c -f 0xada52840 -o ./build/firmware-${{ env.VERSION }}.uf2 ./build/*.hex
-
       - name: Fertige Firmware als ZIP bereitstellen
         uses: actions/upload-artifact@v4
         with:
-          name: blipbox-${{ env.VERSION }}-firmware
+          name: blipbox-31v27-firmware
           path: ./build/
