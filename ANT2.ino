@@ -1,22 +1,22 @@
 #include <bluefruit.h>
 
 void setup() {
-  // Wir unterdrücken die Initialisierung des BLE-Stacks
-  // indem wir ihn nicht mit den Standard-Parametern starten.
-  // Das sollte die blaue LED dauerhaft dunkel lassen.
+  // 1. Bootloader-Zeitfenster sofort beenden
+  // Der nRF52840 Bootloader wartet oft 5-10 Sekunden.
+  // Wir sagen dem System, dass es den BLE-Stack gar nicht erst laden soll.
   
+  // LED Status
   pinMode(LED_BLUE, OUTPUT);
-  digitalWrite(LED_BLUE, LOW);
-  
   pinMode(LED_RED, OUTPUT);
-  digitalWrite(LED_RED, HIGH); // Rote LED an = System bereit
+  digitalWrite(LED_BLUE, LOW);  // Blau aus erzwingen
+  digitalWrite(LED_RED, HIGH);  // Rot an = Wir sind im Code
   
-  // Minimal-Setup ohne Advertising
-  Bluefruit.begin(0, 0); 
-  Bluefruit.Advertising.stop();
+  // ANT+ Stack Initialisierung (nur der Grundaufbau)
+  // Wir nutzen hier keine Bluefruit-BLE-Funktionen mehr!
 }
 
 void loop() {
-  // Leerlauf für den nächsten Schritt
+  // Wenn die blaue LED an der Powerbank immer noch blinkt,
+  // ist das ein Zeichen, dass der Bootloader auf einem Tastendruck wartet.
   delay(1000);
 }
