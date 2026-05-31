@@ -1,5 +1,5 @@
 // =================================================================
-// PROJEKT: Birger DIY 67 (Der ultimative Handy-Kompatibilitäts-Test)
+// PROJEKT: Birger DIY 31v02 (Laptop-Sichtbarkeits-Optimierung)
 // =================================================================
 #include <bluefruit.h>
 
@@ -9,21 +9,22 @@ BLEHidAdafruit blehid;
 void setup() {
   Bluefruit.begin();
   
-  // Setze den Namen neu
-  Bluefruit.setName("Birger DIY 31.01");
-  
-  // HID-Profil initialisieren
+  // Wir geben dem Gerät einen offiziellen Charakter
+  bledis.setManufacturer("Birger DIY");
+  bledis.setModel("ANT-Bridge");
+  bledis.begin();
+
   blehid.begin();
   
-  // WICHTIG: Advertising so einstellen, dass es IMMER sichtbar bleibt
-  Bluefruit.Advertising.restartOnDisconnect(true);
+  Bluefruit.setName("Birger DIY 31v02");
+  
+  // Advertising-Einstellungen für maximale Kompatibilität
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // Wir machen hier nichts, damit der Bluetooth-Stack 
-  // alle Ressourcen für die Sichtbarkeit hat.
   delay(1000);
 }
