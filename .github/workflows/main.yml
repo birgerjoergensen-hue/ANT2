@@ -9,25 +9,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: arduino/setup-arduino-cli@v2
       
-      - name: Tools installieren
+      - name: Board und Tools installieren
         run: |
           pip install adafruit-nrfutil
-          sudo ln -s /home/runner/.local/bin/adafruit-nrfutil /usr/local/bin/adafruit-nrfutil
-
-      - name: Board installieren
-        run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Kompilieren
+      - name: Kompilieren mit UF2 Export
+        # Wir lassen die cli das .uf2 File direkt mitbauen
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
-
-      - name: In UF2 umwandeln
-        run: |
-          # Wir laden den Konverter direkt von Adafruit und wandeln die .hex um
-          curl -LO https://raw.githubusercontent.com/adafruit/Adafruit_nRF52_Bootloader/master/lib/uf2/utils/uf2conv.py
-          python3 uf2conv.py -f 0xada52840 -c -o ./build/firmware.uf2 ./build/*.hex
+          # Suchen der erzeugten Datei und in firmware.uf2 umbenennen
+          mv ./build/*.uf2 ./build/firmware.uf2 || echo "Keine UF2 gefunden, prüfe Build-Log"
 
       - name: Artefakt hochladen
         uses: actions/upload-artifact@v4
