@@ -1,24 +1,24 @@
 #include <Arduino.h>
 
+// Wir verzichten auf #include <bluefruit.h>, um BLE-Konflikte zu vermeiden.
+// Wir steuern die Hardware direkt über die Register des nRF52.
+
 void setup() {
-  // LED Status setzen
+  // Status-LEDs initialisieren
   pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_RED, OUTPUT);
-  
-  // Blaue LED hart aus
+
+  // Blaue LED (BLE-Status) hart auf LOW (Aus)
   digitalWrite(LED_BLUE, LOW);
   
-  // Rote LED an für 2 Sekunden als Start-Signal
+  // Rote LED (System-Status) kurz an, um Lebenszeichen zu geben
   digitalWrite(LED_RED, HIGH);
-  delay(2000);
+  delay(1000);
   digitalWrite(LED_RED, LOW);
-  
-  // Ab hier würde der ANT-Stack initialisiert
-  // Da wir Bluefruit.h entfernen, stürzt das Radio-Modul nicht mehr ab.
 }
 
 void loop() {
-  // Wenn das Board jetzt stabil bleibt (kein blaues Blinken mehr),
-  // wissen wir, dass der Bootloader-Absturz behoben ist.
+  // Hier passiert zur Zeit nur die Warteschleife.
+  // Das Board sendet in diesem Zustand (hoffentlich) kein BLE-Signal mehr.
   delay(1000);
 }
