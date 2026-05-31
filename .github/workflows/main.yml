@@ -23,14 +23,15 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: ANT Bibliothek installieren
-        # Wir ziehen die Bibliothek direkt aus dem Repo, damit ANT.h verfügbar ist
+      - name: ANT Bibliothek manuell installieren
         run: |
-          arduino-cli lib install --git-url https://github.com/djaustin/nRF52-ANT
+          mkdir -p libraries
+          git clone https://github.com/djaustin/nRF52-ANT libraries/ANT
 
       - name: Sketch kompilieren
+        # Wir weisen den Compiler an, den lokalen libraries Ordner zu nutzen
         run: |
-          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --libraries ./libraries --output-dir ./build .
 
       - name: Fertige Firmware als ZIP bereitstellen
         uses: actions/upload-artifact@v4
