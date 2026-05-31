@@ -15,15 +15,6 @@ jobs:
       - name: Code auschecken
         uses: actions/checkout@v4
 
-      - name: Python für Tools einrichten
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: adafruit-nrfutil installieren
-        run: |
-          pip install adafruit-nrfutil
-
       - name: Arduino CLI einrichten
         uses: arduino/setup-arduino-cli@v2
 
@@ -34,12 +25,15 @@ jobs:
 
       - name: Sketch kompilieren
         run: |
-          # Wir setzen den Pfad zu den lokalen Tools explizit
-          export PATH=$PATH:/home/runner/.local/bin
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+
+      - name: UF2 manuell generieren
+        run: |
+          # Pfad zum offiziellen Adafruit UF2 Converter
+          python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -c -f 0xada52840 -o ./build/firmware-31v33.uf2 ./build/*.hex
 
       - name: Fertige Firmware als ZIP bereitstellen
         uses: actions/upload-artifact@v4
         with:
-          name: blipbox-31v32-firmware
+          name: blipbox-31v33-firmware
           path: ./build/
