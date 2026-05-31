@@ -1,20 +1,22 @@
 #include <bluefruit.h>
 
 void setup() {
-  // 1. Bluetooth-Stack stoppen
-  Bluefruit.begin();
-  Bluefruit.Advertising.stop();
-  Bluefruit.Scanner.stop();
+  // Wir unterdrücken die Initialisierung des BLE-Stacks
+  // indem wir ihn nicht mit den Standard-Parametern starten.
+  // Das sollte die blaue LED dauerhaft dunkel lassen.
   
-  // 2. Damit der nRF52 vom Coros Dura als ANT+ Gerät erkannt wird,
-  // muss das Radio-Profil auf ANT umgestellt werden. 
-  // Das Adafruit-Core macht das intern, wenn wir den Modus wechseln:
-  Serial.begin(115200);
-  Serial.println("ANT+ Modus aktiv - Suche nach Signal am Coros...");
+  pinMode(LED_BLUE, OUTPUT);
+  digitalWrite(LED_BLUE, LOW);
+  
+  pinMode(LED_RED, OUTPUT);
+  digitalWrite(LED_RED, HIGH); // Rote LED an = System bereit
+  
+  // Minimal-Setup ohne Advertising
+  Bluefruit.begin(0, 0); 
+  Bluefruit.Advertising.stop();
 }
 
 void loop() {
-  // Hier passiert nichts mehr, da das ANT-Radio im Hintergrund 
-  // hardwareseitig läuft (Broadcast).
+  // Leerlauf für den nächsten Schritt
   delay(1000);
 }
