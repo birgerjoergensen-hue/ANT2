@@ -1,42 +1,33 @@
-name: Arduino Compile to UF2 (nice!nano BLE)
+#include <bluefruit.h>
 
-on: [push]
+BLEDis bledis;
+BLEHrm blehrm; // Profil für Herzfrequenz-Sensor
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+void setup() {
+  Bluefruit.begin();
+  
+  // Ich habe die Versionierung für dich übernommen:
+  Bluefruit.setName("GEMMI_31v10");
+  
+  bledis.setManufacturer("GEMMI DIY");
+  bledis.setModel("ANT-Bridge");
+  bledis.begin();
 
-jobs:
-  compile:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+  blehrm.begin();
+  
+  // Sichtbarkeit für das Coros Dura (als Sensor)
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addService(blehrm);
+  Bluefruit.Advertising.addName();
+  
+  // Schnelles Senden für den Suchmodus
+  Bluefruit.Advertising.setInterval(32, 244); 
+  Bluefruit.Advertising.setFastTimeout(30);
+  Bluefruit.Advertising.start(0);
+}
 
-      - name: Setup Arduino CLI
-        uses: arduino/setup-arduino-cli@v1
-
-      - name: Install Python Dependencies & Adafruit Tools
-        run: |
-          pip3 install pyserial adafruit-nrfutil
-
-      - name: Install nRF52 Board Core
-        run: |
-          arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-          arduino-cli core install adafruit:nrf52@1.7.0 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-
-      - name: Compile Code & Convert to UF2
-        run: |
-          REAL_FQBN="adafruit:nrf52:feather52840sense"
-          
-          # Sauberer Standard-Build ohne riskante ANT-Flags
-          arduino-cli compile --fqbn "$REAL_FQBN" --output-dir ./build ./ANT2.ino
-          
-          # Konvertierung zu UF2
-          ADAFRUIT_UF2_SCRIPT="$HOME/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py"
-          python3 "$ADAFRUIT_UF2_SCRIPT" ./build/ANT2.ino.hex -c -f 0xada52840 -o ./build/ANT2.ino.uf2
-
-      - name: Upload UF2 Firmware
-        uses: actions/upload-artifact@v4
-        with:
-          name: blipbox-v4-firmware
-          path: ./build/
+void loop() {
+  // Simulierter Puls von 80 BPM
+  blehrm.measure(80); 
+  delay(1000);
+}
