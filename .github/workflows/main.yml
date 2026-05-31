@@ -2,22 +2,22 @@ name: Arduino Build
 
 on: [push, workflow_dispatch]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
       
-      # 1. ZUERST das Tool installieren, bevor die Arduino-Umgebung geladen wird
       - name: Install Tooling
         run: |
           pip3 install adafruit-nrfutil
-          # Suche nach dem Pfad, wo pip es hingelegt hat, und verlinke es global
           sudo ln -s $(which adafruit-nrfutil) /usr/local/bin/adafruit-nrfutil
           
-      - uses: arduino/setup-arduino-cli@v2
-      
-      - name: Install Board
+      - name: Board Installation
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
@@ -26,13 +26,16 @@ jobs:
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
-      - name: Create UF2
+      - name: Versionierte UF2 Erstellung
         run: |
+          # Zeitstempel generieren (Format: JJJJ-MM-TT-HHMM)
+          VERSION=$(date +%Y-%m-%d-%H%M)
           TOOL_PATH="/home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py"
-          python3 $TOOL_PATH -f 0xada52840 -c -o ./build/firmware.uf2 ./build/*.hex
+          # Dateiname mit Version versehen
+          python3 $TOOL_PATH -f 0xada52840 -c -o ./build/ANT2-$VERSION.uf2 ./build/*.hex
 
-      - name: Upload
+      - name: Artefakt hochladen
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-fertig
-          path: ./build/firmware.uf2
+          name: ANT2-Firmware-Versioniert
+          path: ./build/ANT2-*.uf2
