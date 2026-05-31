@@ -15,9 +15,9 @@ jobs:
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
       - name: Kompilieren
+        # --build-property sorgt dafür, dass die Signatur-Tools nicht aufgerufen werden
         run: |
-          # Wir kompilieren OHNE die Tools, die den Fehler verursachen
-          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --build-property recipe.hooks.objcopy.postlink.1.pattern= --output-dir ./build .
 
       - name: Artefakt hochladen
         uses: actions/upload-artifact@v4
