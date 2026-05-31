@@ -1,29 +1,39 @@
-// ==========================================
-// DEINE VERSIONIERUNG: 31v28 (ANT+ SHIFTING)
-// ==========================================
-#include <ANT.h>
+name: Arduino Build und Verpackung
 
-// SRAM Shifting Device Type
-#define DEVICE_TYPE_SHIFTING 0x04 
-#define CHANNEL_NUMBER 0
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
 
-void setup() {
-  // ANT Kanal für Shifting öffnen
-  // Wir emulieren ein Schaltwerk
-  ANT.begin(CHANNEL_NUMBER, DEVICE_TYPE_SHIFTING, 0x1234, 1);
-}
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-void loop() {
-  // ANT+ Shifting Data Page 1
-  // Byte 0: Data Page 1 (0x01)
-  // Byte 4: 0x00=Nichts, 0x01=Hochschalten, 0x02=Runterschalten
-  
-  uint8_t payload[8] = {0x01, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF};
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
 
-  // --- HIER DEINE TASTER-LOGIK ---
-  // Wenn Taster 1 gedrückt:
-  payload[4] = 0x01; // Schaltbefehl "Hoch"
-  ANT.broadcast(CHANNEL_NUMBER, payload);
-  
-  delay(2000); // Testweise senden wir alle 2 Sekunden einen Befehl
-}
+      - name: Arduino CLI einrichten
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Adafruit Board-Manager hinzufügen
+        run: |
+          arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+          arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+
+      - name: ANT Bibliothek installieren
+        # Wir ziehen die Bibliothek direkt aus dem Repo, damit ANT.h verfügbar ist
+        run: |
+          arduino-cli lib install --git-url https://github.com/djaustin/nRF52-ANT
+
+      - name: Sketch kompilieren
+        run: |
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+
+      - name: Fertige Firmware als ZIP bereitstellen
+        uses: actions/upload-artifact@v4
+        with:
+          name: blipbox-31v29-firmware
+          path: ./build/
