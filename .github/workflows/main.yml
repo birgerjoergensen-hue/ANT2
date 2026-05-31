@@ -34,14 +34,15 @@ jobs:
 
       - name: Versionsnummer aus ANT2.ino auslesen
         run: |
-          VERSION=$(grep -oP 'String versionsNummer = "\K[^"]+' ANT2.ino || echo "unknown")
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          # Liest die Version aus und entfernt eventuelle unsichtbare Zeilenumbüche
+          CLEAN_VERSION=$(grep -oP 'String versionsNummer = "\K[^"]+' ANT2.ino | tr -d '\r\n' || echo "unknown")
+          echo "VERSION=${CLEAN_VERSION}" >> $GITHUB_ENV
 
       - name: Sketch kompilieren
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
-      - name: UF2 Datei generieren (Jetzt mit Versionsnummer im Namen!)
+      - name: UF2 Datei generieren
         run: |
           python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -c -f 0xada52840 -o ./build/firmware-${{ env.VERSION }}.uf2 ./build/*.hex
 
