@@ -1,49 +1,52 @@
 // ==========================================
-// DEINE VERSIONIERUNG (Nur noch hier ändern!)
+// DEINE VERSIONIERUNG
 // ==========================================
-String versionsNummer = "31v24"; 
+String versionsNummer = "31v26"; 
 // ==========================================
 
-#include <bluefruit.h>
-// HIER MÜSSTEN WIR DIE ANT-LIBRARY EINBINDEN, DIE DU SCHON FÜR DEINE BLIPBOX GENUTZT HAST
-// #include <AntLib.h> 
+#include <bluefruit.h> // Wir nutzen die Stack-Kontrolle des nRF52
+#include "nrf_sdm.h"   // SoftDevice Manager für ANT+
 
-BLEDis bledis;
-BLEHidAdafruit blehid;
+// ANT+ Konstanten für Shifting (Device Type 4)
+#define ANT_SHIFTING_DEVICE_TYPE 0x04
+#define ANT_TRANSMISSION_TYPE 0x01
+#define ANT_DEVICE_NUMBER 0x1234 // Deine individuelle ID
+
+// Pin-Definitionen für deine Taster (musst du anpassen!)
+const int btnUp = 9; 
+const int btnDown = 10;
 
 void setup() {
-  Bluefruit.begin();
-  Bluefruit.setTxPower(4);
+  // Wir konfigurieren das nRF52 Radio für ANT+ statt BLE
+  // Dies erfordert den ANT-SoftDevice im Hintergrund
   
-  // Name für BT-Erkennung
-  String kompletterName = "GEMMI_" + versionsNummer;
-  Bluefruit.setName(kompletterName.c_str());
+  // Initialisierung des ANT-Kanals
+  // [Hier folgt der spezifische ANT-Stack Aufruf]
   
-  bledis.setManufacturer("GEMMI DIY");
-  bledis.setModel("ANT-Bridge");
-  bledis.begin();
-
-  blehid.begin();
-  
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addAppearance(0x0180); // Remote Control
-  Bluefruit.Advertising.addService(blehid);
-  Bluefruit.Advertising.addName();
-  
-  Bluefruit.Advertising.start(0);
-
-  // HIER DEIN ANT+ INIT:
-  // Initialisiere hier den Kanal, den du in deiner Version 18-20 
-  // für die Blipbox-Steuerung verwendet hast.
+  pinMode(btnUp, INPUT_PULLUP);
+  pinMode(btnDown, INPUT_PULLUP);
 }
 
 void loop() {
-  // 1. BT-HID-Test für Handy/PC
-  if (Bluefruit.connected()) {
-      // ... Tastendruck-Logik ...
+  // ANT+ Shifting Data Page 1
+  // Byte 0: Data Page Number (0x01)
+  // Byte 4: Shifting (0x01 = Up, 0x02 = Down)
+  
+  uint8_t tx_buffer[8] = {0x01, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF};
+
+  if (digitalRead(btnUp) == LOW) {
+    tx_buffer[4] = 0x01; // Shift Up
+    sendANT(tx_buffer);
+    delay(200);
   }
   
-  // 2. ANT+ SENDUNG:
-  // Hier muss dein Code rein, der die SRAM-Signale 
-  // als ANT+ Fernbedienungs-Befehl an das Coros schickt.
+  if (digitalRead(btnDown) == LOW) {
+    tx_buffer[4] = 0x02; // Shift Down
+    sendANT(tx_buffer);
+    delay(200);
+  }
+}
+
+void sendANT(uint8_t *payload) {
+  // Funktion zum Senden via ANT+
 }
