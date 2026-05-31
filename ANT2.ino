@@ -1,59 +1,29 @@
 // =================================================================
-// PROJEKT: Birger DIY 65 (Der unsichtbare F13-Befehl)
+// PROJEKT: Birger DIY 67 (Der ultimative Handy-Kompatibilitäts-Test)
 // =================================================================
 #include <bluefruit.h>
-#include <hal/nrf_gpio.h>
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-#define PIN_D9       NRF_GPIO_PIN_MAP(1, 6)
-#define PIN_D8       NRF_GPIO_PIN_MAP(1, 4)
-#define RED_LED      NRF_GPIO_PIN_MAP(0, 15)
-
-bool d8_aktiv = false;
-bool d9_aktiv = false;
-
 void setup() {
   Bluefruit.begin();
-  // Standard-Tastatur-Profil für maximale Kompatibilität
+  
+  // Setze den Namen neu
+  Bluefruit.setName("Birger DIY 31.01");
+  
+  // HID-Profil initialisieren
   blehid.begin();
   
-  Bluefruit.setName("Birger DIY 65");
-  
-  nrf_gpio_cfg_input(PIN_D9, NRF_GPIO_PIN_PULLUP);
-  nrf_gpio_cfg_input(PIN_D8, NRF_GPIO_PIN_PULLUP);
-  nrf_gpio_cfg_output(RED_LED);
-  nrf_gpio_pin_write(RED_LED, 1); 
-  
+  // WICHTIG: Advertising so einstellen, dass es IMMER sichtbar bleibt
+  Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // D9 sendet F13 (unsichtbar, keine Buchstaben!)
-  if (nrf_gpio_pin_read(PIN_D9) == 0 && !d9_aktiv) {
-    nrf_gpio_pin_write(RED_LED, 0); 
-    blehid.keyPress(HID_KEY_F13);
-    delay(50);
-    blehid.keyRelease();
-    d9_aktiv = true;
-  } else if (nrf_gpio_pin_read(PIN_D9) != 0) {
-    d9_aktiv = false;
-    nrf_gpio_pin_write(RED_LED, 1); 
-  }
-
-  // D8 sendet F14 (ebenfalls unsichtbar)
-  if (nrf_gpio_pin_read(PIN_D8) == 0 && !d8_aktiv) {
-    nrf_gpio_pin_write(RED_LED, 0); 
-    blehid.keyPress(HID_KEY_F14);
-    delay(50);
-    blehid.keyRelease();
-    d8_aktiv = true;
-  } else if (nrf_gpio_pin_read(PIN_D8) != 0) {
-    d8_aktiv = false;
-    nrf_gpio_pin_write(RED_LED, 1);
-  }
-  delay(10);
+  // Wir machen hier nichts, damit der Bluetooth-Stack 
+  // alle Ressourcen für die Sichtbarkeit hat.
+  delay(1000);
 }
