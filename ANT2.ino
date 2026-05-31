@@ -1,30 +1,29 @@
 // =================================================================
-// PROJEKT: Birger DIY 31v02 (Laptop-Sichtbarkeits-Optimierung)
+// PROJEKT: Birger DIY 31v04 (Rad-Sensor Profil)
 // =================================================================
 #include <bluefruit.h>
 
 BLEDis bledis;
-BLEHidAdafruit blehid;
+BLECSCS blecsc; // Cycling Speed & Cadence Profil
 
 void setup() {
   Bluefruit.begin();
   
-  // Wir geben dem Gerät einen offiziellen Charakter
-  bledis.setManufacturer("Birger DIY");
+  bledis.setManufacturer("Birger");
   bledis.setModel("ANT-Bridge");
   bledis.begin();
 
-  blehid.begin();
+  blecsc.begin();
   
-  Bluefruit.setName("Birger DIY 31v02");
+  Bluefruit.setName("Birger DIY 31v04");
   
-  // Advertising-Einstellungen für maximale Kompatibilität
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addService(blehid);
+  Bluefruit.Advertising.addService(blecsc);
   Bluefruit.Advertising.addName();
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
+  // Wir senden keine Daten, nur das Profil-Signal
   delay(1000);
 }
