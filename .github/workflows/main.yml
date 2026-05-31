@@ -23,10 +23,6 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: ANTPlus Library installieren
-        run: |
-          arduino-cli lib install "ANTPlus"
-
       - name: Sketch kompilieren
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
@@ -34,5 +30,5 @@ jobs:
       - name: Fertige Firmware als ZIP bereitstellen
         uses: actions/upload-artifact@v4
         with:
-          name: blipbox-31v27-firmware
+          name: blipbox-31v28-firmware
           path: ./build/
