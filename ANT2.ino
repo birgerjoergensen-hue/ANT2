@@ -1,7 +1,7 @@
 // ==========================================
 // DEINE VERSIONIERUNG (Nur noch hier ändern!)
 // ==========================================
-String versionsNummer = "31v14"; 
+String versionsNummer = "31v15"; 
 // ==========================================
 
 #include <bluefruit.h>
@@ -9,7 +9,7 @@ String versionsNummer = "31v14";
 void setup() {
   Bluefruit.begin();
   
-  // Name baut sich automatisch zusammen: GEMMI_31v14
+  // Name baut sich automatisch zusammen: GEMMI_31v15
   String kompletterName = "GEMMI_" + versionsNummer;
   Bluefruit.setName(kompletterName.c_str());
   
