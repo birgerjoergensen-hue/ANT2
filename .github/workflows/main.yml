@@ -2,6 +2,10 @@ name: Arduino Build
 
 on: [push, workflow_dispatch]
 
+env:
+  # Unterdrückt die Node.js Warnungen für den Moment
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,15 +19,19 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Kompilieren mit UF2 Export
-        # Wir lassen die cli das .uf2 File direkt mitbauen
+      - name: Kompilieren
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
-          # Suchen der erzeugten Datei und in firmware.uf2 umbenennen
-          mv ./build/*.uf2 ./build/firmware.uf2 || echo "Keine UF2 gefunden, prüfe Build-Log"
 
+      - name: Vorbereitung für Upload
+        run: |
+          # Wir schauen nach, was wirklich gebaut wurde
+          ls -R ./build
+          # Falls keine uf2 da ist, kopieren wir alles, damit wir sehen, was da ist
+          # In der Regel liegt hier eine .hex oder .bin Datei
+          
       - name: Artefakt hochladen
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
-          path: ./build/firmware.uf2
+          name: firmware-dateien
+          path: ./build/*
