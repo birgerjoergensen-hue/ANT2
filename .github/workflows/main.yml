@@ -1,39 +1,26 @@
-name: Arduino Build und Verpackung
+name: Arduino Build
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Code auschecken
-        uses: actions/checkout@v4
-
-      - name: Arduino CLI einrichten
-        uses: arduino/setup-arduino-cli@v2
-
-      - name: Adafruit Board-Manager hinzufügen
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      
+      - name: Board installieren
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Sketch kompilieren
+      - name: Kompilieren
         run: |
+          # Wir kompilieren OHNE die Tools, die den Fehler verursachen
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
-      - name: UF2 manuell generieren
-        run: |
-          # Pfad zum offiziellen Adafruit UF2 Converter
-          python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -c -f 0xada52840 -o ./build/firmware-31v33.uf2 ./build/*.hex
-
-      - name: Fertige Firmware als ZIP bereitstellen
+      - name: Artefakt hochladen
         uses: actions/upload-artifact@v4
         with:
-          name: blipbox-31v33-firmware
+          name: firmware
           path: ./build/
