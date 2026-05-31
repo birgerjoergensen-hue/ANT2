@@ -2,9 +2,6 @@ name: Arduino Build
 
 on: [push, workflow_dispatch]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,13 +14,14 @@ jobs:
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
-      - name: Kompilieren
+      - name: Kompilieren ohne Signierung
+        # Wir setzen die Post-Link-Pattern leer, damit nrfutil ignoriert wird
         run: |
-          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --build-property recipe.hooks.objcopy.postlink.1.pattern= --output-dir ./build .
 
-      - name: Automatische UF2 Erstellung
+      - name: Manuelle UF2 Erstellung
         run: |
-          # Pfad zum Tool innerhalb des installierten Boards
+          # Wir nutzen das im Core enthaltene Tool ohne externe Abhängigkeit
           TOOL_PATH="/home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py"
           python3 $TOOL_PATH -f 0xada52840 -c -o ./build/firmware.uf2 ./build/*.hex
 
