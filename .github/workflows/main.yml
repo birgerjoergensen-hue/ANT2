@@ -15,6 +15,15 @@ jobs:
       - name: Code auschecken
         uses: actions/checkout@v4
 
+      - name: Python für Tools einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: adafruit-nrfutil installieren
+        run: |
+          pip install adafruit-nrfutil
+
       - name: Arduino CLI einrichten
         uses: arduino/setup-arduino-cli@v2
 
@@ -24,12 +33,13 @@ jobs:
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
       - name: Sketch kompilieren
-        # Kein --libraries Flag mehr nötig!
         run: |
+          # Wir setzen den Pfad zu den lokalen Tools explizit
+          export PATH=$PATH:/home/runner/.local/bin
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
       - name: Fertige Firmware als ZIP bereitstellen
         uses: actions/upload-artifact@v4
         with:
-          name: blipbox-31v30-firmware
+          name: blipbox-31v32-firmware
           path: ./build/
