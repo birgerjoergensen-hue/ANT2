@@ -1,29 +1,29 @@
 // ==========================================
-// DEINE VERSIONIERUNG: 31v27 (ANT+ SHIFTING)
+// DEINE VERSIONIERUNG: 31v28 (ANT+ SHIFTING)
 // ==========================================
-#include <AntPlus.h>
-#include <AntPlusShifting.h>
+#include <ANT.h>
 
-// Deine Geräte-ID (kannst du ändern, wenn er es nicht sofort findet)
-#define DEVICE_ID 12345 
-
-AntPlusShifting shifting(DEVICE_ID);
+// SRAM Shifting Device Type
+#define DEVICE_TYPE_SHIFTING 0x04 
+#define CHANNEL_NUMBER 0
 
 void setup() {
-  // ANT+ Stack Initialisierung
-  // Wir emulieren ein Shifting-Device (0x04)
-  AntPlus_Init(); 
-  shifting.begin();
+  // ANT Kanal für Shifting öffnen
+  // Wir emulieren ein Schaltwerk
+  ANT.begin(CHANNEL_NUMBER, DEVICE_TYPE_SHIFTING, 0x1234, 1);
 }
 
 void loop() {
-  // Hier würde deine Logik für die Taster stehen.
-  // Zum Testen senden wir alle 5 Sekunden einen "Schaltbefehl"
+  // ANT+ Shifting Data Page 1
+  // Byte 0: Data Page 1 (0x01)
+  // Byte 4: 0x00=Nichts, 0x01=Hochschalten, 0x02=Runterschalten
   
-  // 1 = Hoch, 2 = Runter
-  shifting.shift(1); 
-  delay(1000);
-  shifting.shift(2);
+  uint8_t payload[8] = {0x01, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF};
+
+  // --- HIER DEINE TASTER-LOGIK ---
+  // Wenn Taster 1 gedrückt:
+  payload[4] = 0x01; // Schaltbefehl "Hoch"
+  ANT.broadcast(CHANNEL_NUMBER, payload);
   
-  delay(5000);
+  delay(2000); // Testweise senden wir alle 2 Sekunden einen Befehl
 }
