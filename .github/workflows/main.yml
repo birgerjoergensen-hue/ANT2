@@ -1,33 +1,35 @@
-#include <bluefruit.h>
+name: Arduino Build und Verpackung
 
-BLEDis bledis;
-BLEHrm blehrm; // Profil für Herzfrequenz-Sensor
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Erlaubt es dir, den Build auch manuell auf GitHub zu starten
 
-void setup() {
-  Bluefruit.begin();
-  
-  // Ich habe die Versionierung für dich übernommen:
-  Bluefruit.setName("GEMMI_31v10");
-  
-  bledis.setManufacturer("GEMMI DIY");
-  bledis.setModel("ANT-Bridge");
-  bledis.begin();
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  blehrm.begin();
-  
-  // Sichtbarkeit für das Coros Dura (als Sensor)
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addService(blehrm);
-  Bluefruit.Advertising.addName();
-  
-  // Schnelles Senden für den Suchmodus
-  Bluefruit.Advertising.setInterval(32, 244); 
-  Bluefruit.Advertising.setFastTimeout(30);
-  Bluefruit.Advertising.start(0);
-}
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
 
-void loop() {
-  // Simulierter Puls von 80 BPM
-  blehrm.measure(80); 
-  delay(1000);
-}
+      - name: Arduino CLI einrichten
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Adafruit Board-Manager hinzufügen und installieren
+        run: |
+          arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+          arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+
+      - name: Sketch kompilieren
+        run: |
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build ./ANT2
+
+      - name: Fertige Firmware als ZIP bereitstellen (Automatisches Hochzählen)
+        uses: actions/upload-artifact@v4
+        with:
+          # Nutzt die GitHub-Laufnummer, damit der Download nie wieder gleich heißt!
+          name: blipbox-build-${{ github.run_number }}-firmware
+          path: ./build/
