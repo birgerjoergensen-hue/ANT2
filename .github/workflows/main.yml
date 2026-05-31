@@ -41,9 +41,9 @@ jobs:
         run: |
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
-      - name: UF2 Datei generieren
+      - name: UF2 Datei generieren (Jetzt mit Versionsnummer im Namen!)
         run: |
-          python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -c -f 0xada52840 -o ./build/firmware.uf2 ./build/*.hex
+          python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -c -f 0xada52840 -o ./build/firmware-${{ env.VERSION }}.uf2 ./build/*.hex
 
       - name: Fertige Firmware als ZIP bereitstellen
         uses: actions/upload-artifact@v4
