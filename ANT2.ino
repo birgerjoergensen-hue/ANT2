@@ -1,22 +1,24 @@
-#include <bluefruit.h>
+#include <Arduino.h>
 
 void setup() {
-  // 1. Bootloader-Zeitfenster sofort beenden
-  // Der nRF52840 Bootloader wartet oft 5-10 Sekunden.
-  // Wir sagen dem System, dass es den BLE-Stack gar nicht erst laden soll.
-  
-  // LED Status
+  // LED Status setzen
   pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_RED, OUTPUT);
-  digitalWrite(LED_BLUE, LOW);  // Blau aus erzwingen
-  digitalWrite(LED_RED, HIGH);  // Rot an = Wir sind im Code
   
-  // ANT+ Stack Initialisierung (nur der Grundaufbau)
-  // Wir nutzen hier keine Bluefruit-BLE-Funktionen mehr!
+  // Blaue LED hart aus
+  digitalWrite(LED_BLUE, LOW);
+  
+  // Rote LED an für 2 Sekunden als Start-Signal
+  digitalWrite(LED_RED, HIGH);
+  delay(2000);
+  digitalWrite(LED_RED, LOW);
+  
+  // Ab hier würde der ANT-Stack initialisiert
+  // Da wir Bluefruit.h entfernen, stürzt das Radio-Modul nicht mehr ab.
 }
 
 void loop() {
-  // Wenn die blaue LED an der Powerbank immer noch blinkt,
-  // ist das ein Zeichen, dass der Bootloader auf einem Tastendruck wartet.
+  // Wenn das Board jetzt stabil bleibt (kein blaues Blinken mehr),
+  // wissen wir, dass der Bootloader-Absturz behoben ist.
   delay(1000);
 }
