@@ -33,7 +33,7 @@ void setup() {
 void loop() {
   if (Bluefruit.connected()) {
     // Wenn Taster gedrückt: Sende expliziten "Schalt"-Befehl
-    if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
+    if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == HIGH) {
       uint8_t commandData[] = {0x01, 0x01}; 
       ebc.notify(commandData, sizeof(commandData));
       delay(500); // Verzögerung, um den Coros nicht zu fluten
