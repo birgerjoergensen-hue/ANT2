@@ -3,11 +3,14 @@
 BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
 BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
 
-// P1.06 entspricht beim Feather nRF52840 Sense der Pin-Nummer 11
-const int buttonPin = 11; 
+// P1.06 ist auf dem Feather Board oft als "D9" markiert. 
+// Die sicherste Methode ist es, das Pin-Mapping über die Arduino-Konstante zu versuchen.
+// Wenn das nicht geht, nutzen wir die direkte ID.
+#define BUTTON_PIN 11 
 
 void setup() {
-  pinMode(buttonPin, INPUT_PULLUP);
+  // Wir nutzen INPUT_PULLUP, damit der Taster gegen Masse schaltet
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   
   Bluefruit.begin();
   Bluefruit.setName("BLIPBOX-V35");
@@ -24,8 +27,11 @@ void setup() {
 
 void loop() {
   if (Bluefruit.connected()) {
-    // 100 BPM (0x64) bei Tastendruck, 60 BPM (0x3C) im Leerlauf
-    uint8_t hrValue = (digitalRead(buttonPin) == LOW) ? 0x64 : 0x3C;
+    // Falls der Taster nicht reagiert, ist er vielleicht "active high" statt "active low"
+    // Wir testen hier: Wenn Pin LOW, dann 100 BPM
+    int sensorState = digitalRead(BUTTON_PIN);
+    
+    uint8_t hrValue = (sensorState == LOW) ? 0x64 : 0x3C;
     uint8_t hrmData[] = {0x00, hrValue}; 
     hrmc.notify(hrmData, sizeof(hrmData));
   }
