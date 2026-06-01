@@ -29,15 +29,17 @@ void setup() {
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.start(0);
 }
-
 void loop() {
   if (Bluefruit.connected()) {
-    // Wenn Taster gedrückt: Sende expliziten "Schalt"-Befehl
-    if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == HIGH) {
-      uint8_t commandData[] = {0x01, 0x01}; 
-      ebc.notify(commandData, sizeof(commandData));
-      delay(500); // Verzögerung, um den Coros nicht zu fluten
-    }
+    // Sende alle 5 Sekunden einen "Page Down" Befehl (Keycode 0x4B)
+    // Das ist der Standard-HID-Code für Page Down
+    blehid.keyPress(0x4B); 
+    delay(100);
+    blehid.keyRelease();
+    
+    delay(5000); // 5 Sekunden warten
   }
   delay(100);
+}
+
 }
