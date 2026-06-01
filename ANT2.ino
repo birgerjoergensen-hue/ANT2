@@ -29,15 +29,15 @@ void setup() {
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.start(0);
 }
+
 void loop() {
   if (Bluefruit.connected()) {
-    // Sende alle 5 Sekunden einen "Page Down" Befehl (Keycode 0x4B)
-    // Das ist der Standard-HID-Code für Page Down
-    blehid.keyPress(0x4B); 
+    // 0x4B ist Page Down, 0 ist für "kein Modifier (Shift/Ctrl)"
+    blehid.keyPress(0x4B, 0); 
     delay(100);
     blehid.keyRelease();
     
-    delay(5000); // 5 Sekunden warten
+    delay(5000); 
   }
   delay(100);
 }
