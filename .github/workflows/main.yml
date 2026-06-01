@@ -8,10 +8,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: System Tooling installieren
+      - name: System Tooling
         run: |
           pip3 install adafruit-nrfutil
-          # Pfad in den PATH exportieren
           echo "/home/runner/.local/bin" >> $GITHUB_PATH
 
       - uses: arduino/setup-arduino-cli@v2
@@ -23,7 +22,8 @@ jobs:
 
       - name: Compile
         run: |
-          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
+          # Wir erzwingen die korrekte Bootloader-Adresse mit -p
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --build-property "build.usb_manufacturer=Adafruit" --build-property "build.usb_product=Feather nRF52840" --output-dir ./build .
 
       - name: UF2 Erstellung
         run: |
