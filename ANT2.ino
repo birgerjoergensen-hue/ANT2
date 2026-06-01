@@ -3,34 +3,30 @@
 BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
 BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
 
-void setup() {
-  Bluefruit.begin();
-  Bluefruit.setTxPower(4);
-  Bluefruit.setName("BLIPBOX-V35");
+const int buttonPin = 9; // Dein D9
 
-  // Herzfrequenz-Service aufsetzen
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP);
+  
+  Bluefruit.begin();
+  Bluefruit.setName("BLIPBOX-V35");
+  
   hrms.begin();
   hrmc.setProperties(CHR_PROPS_NOTIFY);
   hrmc.setFixedLen(2);
   hrmc.begin();
 
-  // Advertising-Daten für den Coros Dura
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addService(hrms);
   Bluefruit.Advertising.addName();
-  
-  Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);
-  Bluefruit.Advertising.setFastTimeout(30);
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // Hier war der Fehler: connected() statt Connected()
   if (Bluefruit.connected()) {
-    uint8_t hrmData[] = {0x00, 0x48}; 
+    // Wenn Taster gedrückt (LOW), sende 100 BPM (0x64), sonst 60 BPM (0x3C)
+    uint8_t hrValue = (digitalRead(buttonPin) == LOW) ? 0x64 : 0x3C;
+    uint8_t hrmData[] = {0x00, hrValue}; 
     hrmc.notify(hrmData, sizeof(hrmData));
   }
-  delay(1000);
+  delay(200); // Schnelle Reaktion für den Test
 }
