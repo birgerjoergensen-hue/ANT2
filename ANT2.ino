@@ -3,7 +3,8 @@
 BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
 BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
 
-const int buttonPin = 9; // Dein D9
+// P1.06 entspricht beim Feather nRF52840 Sense der Pin-Nummer 11
+const int buttonPin = 11; 
 
 void setup() {
   pinMode(buttonPin, INPUT_PULLUP);
@@ -23,10 +24,10 @@ void setup() {
 
 void loop() {
   if (Bluefruit.connected()) {
-    // Wenn Taster gedrückt (LOW), sende 100 BPM (0x64), sonst 60 BPM (0x3C)
+    // 100 BPM (0x64) bei Tastendruck, 60 BPM (0x3C) im Leerlauf
     uint8_t hrValue = (digitalRead(buttonPin) == LOW) ? 0x64 : 0x3C;
     uint8_t hrmData[] = {0x00, hrValue}; 
     hrmc.notify(hrmData, sizeof(hrmData));
   }
-  delay(200); // Schnelle Reaktion für den Test
+  delay(200);
 }
