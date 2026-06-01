@@ -8,22 +8,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: System Tooling
-        run: |
-          pip3 install adafruit-nrfutil
-          echo "/home/runner/.local/bin" >> $GITHUB_PATH
-
       - uses: arduino/setup-arduino-cli@v2
       
       - name: Board Installation
         run: |
+          # Wir brauchen die Adafruit-Library für ANT-Support
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
       - name: Compile
         run: |
-          # Wir erzwingen die korrekte Bootloader-Adresse mit -p
-          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --build-property "build.usb_manufacturer=Adafruit" --build-property "build.usb_product=Feather nRF52840" --output-dir ./build .
+          # Wir kompilieren jetzt explizit für das nice!nano Profil
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --build-property "build.board=NICE_NANO" --output-dir ./build .
 
       - name: UF2 Erstellung
         run: |
