@@ -1,31 +1,28 @@
 #include <bluefruit.h>
 
-// Offizielle Bluetooth-UUIDs für elektronische Schaltungen
-BLEService        shs = BLEService(0x183A); 
-BLECharacteristic shc = BLECharacteristic(0x2B3A);
+// Wir nutzen die CPS (Cycling Power Service) UUID, die oft für E-Bikes/Trainer genutzt wird
+BLEService        ebs = BLEService(0x1818); 
+BLECharacteristic ebc = BLECharacteristic(0x2A63); // Cycling Power Measurement
 
 void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
-  Bluefruit.setName("BLIPBOX-AXS"); // Name angepasst, damit der Coros "Schaltung" assoziiert
+  Bluefruit.setName("E-BIKE-STEPS"); // Wir tarnen uns als Shimano Steps System
 
-  // Schaltungs-Service aufsetzen
-  shs.begin();
-  shc.setProperties(CHR_PROPS_NOTIFY);
-  shc.setFixedLen(4); // Typischer Schaltungsstatus (4 Bytes)
-  shc.begin();
+  ebs.begin();
+  ebc.setProperties(CHR_PROPS_NOTIFY);
+  ebc.setFixedLen(4);
+  ebc.begin();
 
-  // Deinen Taster als Eingang definieren
   pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
 
-  // Dem Coros signalisieren, dass wir eine Schaltung (Cycling Shifting) sind
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   
-  // 0x0440 ist die offizielle "Appearance" für Rad-Sensoren/Schaltungen
-  Bluefruit.Advertising.addAppearance(0x0440); 
+  // Appearance 0x044C steht für E-Bike / Power Sensor
+  Bluefruit.Advertising.addAppearance(0x044C); 
   
-  Bluefruit.Advertising.addService(shs);
+  Bluefruit.Advertising.addService(ebs);
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
@@ -34,17 +31,16 @@ void setup() {
 
 void loop() {
   if (Bluefruit.connected()) {
-    // Standard-Status-Bytes für eine Schaltung im Leerlauf
-    // Byte 0: Anzahl Gänge hinten, Byte 1: Aktueller Gang, etc.
-    uint8_t gearData[] = {0x0B, 0x05, 0x02, 0x01}; 
+    // Dummy-Leistungsdaten (80 Watt im Leerlauf)
+    uint8_t powerData[] = {0x00, 0x00, 0x50, 0x00}; 
 
-    // Wenn der Taster gedrückt wird (LOW), simulieren wir einen Schaltvorgang (z.B. Gangwechsel)
+    // Wenn der Taster gedrückt wird, simulieren wir eine Änderung (z.B. "Unterstützungsstufe hoch" via Leistungssprung)
     if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
-      gearData[1] = 0x06; // Ändere den aktuellen Gang auf 6
-      shc.notify(gearData, sizeof(gearData));
-      delay(200); // Entprellen
+      powerData[2] = 0xC8; // Sprung auf 200 Watt / Signal
+      ebc.notify(powerData, sizeof(powerData));
+      delay(200);
     } else {
-      shc.notify(gearData, sizeof(gearData));
+      ebc.notify(powerData, sizeof(powerData));
     }
   }
   delay(250);
