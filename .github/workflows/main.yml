@@ -1,9 +1,6 @@
-name: Arduino Build
+name: BLIPBOX-31v35-Build
 
 on: [push, workflow_dispatch]
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
@@ -12,11 +9,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: arduino/setup-arduino-cli@v2
       
-      - name: Install Tooling
-        run: |
-          pip3 install adafruit-nrfutil
-          sudo ln -s $(which adafruit-nrfutil) /usr/local/bin/adafruit-nrfutil
-          
       - name: Board Installation
         run: |
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
@@ -24,14 +16,13 @@ jobs:
 
       - name: Compile
         run: |
+          # Zurück zum korrekten FQBN für dein Board
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
-      - name: Versionierte UF2 Erstellung
+      - name: UF2 Erstellung
         run: |
-          # Zeitstempel generieren (Format: JJJJ-MM-TT-HHMM)
           VERSION=$(date +%Y-%m-%d-%H%M)
           TOOL_PATH="/home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py"
-          # Dateiname mit Version versehen
           python3 $TOOL_PATH -f 0xada52840 -c -o ./build/ANT2-$VERSION.uf2 ./build/*.hex
 
       - name: Artefakt hochladen
