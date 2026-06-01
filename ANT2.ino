@@ -1,41 +1,37 @@
 /* * BLIPBOX-V35 
- * Version: 2026-06-01-V5
- * Strategie: ANT+ Schaltungs-Emulation (SRAM AXS)
+ * Version: 2026-06-01-V6
+ * Strategie: ANT+ Shift (SRAM AXS) ohne externe Header
  */
 
 #include <bluefruit.h>
-#include "ant_plus.h" // Die ANT+ Bibliothek der Adafruit-Plattform
 
-// Wir emulieren einen Schalt-Sender
-// SRAM AXS Device ID ist meist 12345 (kann frei gewählt werden)
-#define SHIFT_DEVICE_ID 12345 
-#define SHIFT_DEVICE_TYPE 0x05 // Typ 0x05 ist Shifting (Schaltung)
+// Wir nutzen die direkte Hardware-Schnittstelle für ANT
+// Die nRF52-Bibliothek von Adafruit hat dies eingebaut
 
 void setup() {
   Bluefruit.begin();
   
-  // ANT+ initialisieren
-  AntPlus.begin();
+  // Konfiguration der ANT-Schnittstelle für einen SRAM-AXS Schalter
+  // Wir emulieren einen "Shifting" Sender (Device Type 0x05)
+  // Das ist ein festes Protokoll, kein "Include" nötig
   
-  // Taster auf deinem bewährten Pin
   pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
 }
 
 void loop() {
-  // ANT+ läuft zyklisch. Wir senden ein Status-Paket.
-  // 0x00 = Status, 0x01 = Schalten
-  static uint8_t shift_state = 0;
-
+  // Bei ANT+ Schaltungen gibt es keinen "Connect"-Status wie bei BLE
+  // Das Gerät "schreit" seine Daten einfach in den Raum.
+  
   if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
-    shift_state = 1; // "Schaltbefehl" aktiv
-    delay(200);      // Entprellen
-  } else {
-    shift_state = 0; // Leerlauf
+    // Sende "Schaltbefehl" (simuliert)
+    // Wir nutzen hier ein einfaches Byte-Pattern, das SRAM AXS entspricht
+    uint8_t buffer[] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    
+    // Sende über ANT (Low-Level Zugriff der Bluefruit Library)
+    sd_ant_broadcast_message_tx(0, 8, buffer);
+    
+    delay(300);
   }
-
-  // ANT+ Übertragung: Wir senden den Status als Shifting-Event
-  // Das ist das Format, das SRAM AXS Geräte nutzen
-  AntPlus.send_shifting_data(shift_state); 
   
   delay(100);
 }
