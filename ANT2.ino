@@ -1,49 +1,46 @@
 /* * BLIPBOX-V35 
- * Version: 2026-06-01-V2
- * HID-Test-Modus (5s Intervall)
+ * Version: 2026-06-01-V3
+ * E-Bike-Steuerung: Taster-Fokus
  */
 
 #include <bluefruit.h>
 
-// Globale HID-Objekte
-BLEDis       bledis;
-BLEHidAdafruit blehid;
+BLEService        ebs = BLEService(0x183C); 
+BLECharacteristic ebc = BLECharacteristic(0x2B56); 
 
 void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
-  Bluefruit.setName("BLIPBOX-HID-TEST");
+  Bluefruit.setName("E-BIKE-STEPS");
 
-  // Geräteinfo für das Pairing
-  bledis.setManufacturer("Adafruit Industries");
-  bledis.setModel("Blipbox V35");
-  bledis.begin();
+  ebs.begin();
+  ebc.setProperties(CHR_PROPS_NOTIFY | CHR_PROPS_WRITE);
+  ebc.setFixedLen(2);
+  ebc.begin();
 
-  // HID-Dienst initialisieren
-  blehid.begin();
+  // Dein bewährter Pin: P1.06
+  pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
 
-  // Advertising-Einstellungen für ein HID-Gerät
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
-  Bluefruit.Advertising.addService(blehid);
+  Bluefruit.Advertising.addAppearance(0x044C); 
+  Bluefruit.Advertising.addService(ebs);
   Bluefruit.Advertising.addName();
-  
-  // Wiederverbinden ermöglichen
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
   if (Bluefruit.connected()) {
-    // 0x4B ist Page Down, 0 ist der Modifier (Shift/Ctrl etc.)
-    // Die Signatur blehid.keyPress(keycode, modifier) ist hier zwingend
-    blehid.keyPress(0x4B, 0); 
-    delay(100);
-    blehid.keyRelease();
-    
-    // Warte 5 Sekunden bis zum nächsten "Tastendruck"
-    delay(5000); 
+    // Wenn Taster gedrückt (LOW)
+    if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
+      // 0x01 = Befehl, 0x01 = Wert (Aufwärts/Next)
+      uint8_t commandData[] = {0x01, 0x01}; 
+      ebc.notify(commandData, sizeof(commandData));
+      
+      // Kurze Pause, um den Tastendruck zu signalisieren
+      delay(500); 
+    }
   }
   delay(100);
 }
