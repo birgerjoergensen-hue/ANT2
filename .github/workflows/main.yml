@@ -7,6 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Tooling & Hack
+        run: |
+          pip3 install adafruit-nrfutil
+          # Kopiere das Tool dorthin, wo der Adafruit-Core es erwartet
+          sudo cp $(which adafruit-nrfutil) /usr/local/bin/adafruit-nrfutil
+          
       - uses: arduino/setup-arduino-cli@v2
       
       - name: Board Installation
@@ -16,12 +23,14 @@ jobs:
 
       - name: Compile
         run: |
+          # Wir erzwingen den Pfad zum Tool via Umgebungsvariable
+          export PATH=$PATH:/usr/local/bin
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
       - name: UF2 Erstellung
         run: |
           VERSION=$(date +%Y-%m-%d-%H%M)
-          # Pfad zur uf2conv.py im Adafruit-Core
+          # Direkter Aufruf des Python-Skripts zur Erstellung der UF2 Datei
           python3 /home/runner/.arduino15/packages/adafruit/hardware/nrf52/1.7.0/tools/uf2conv/uf2conv.py -f 0xada52840 -c -o ./build/BLE-HR-$VERSION.uf2 ./build/*.hex
 
       - name: Artefakt hochladen
