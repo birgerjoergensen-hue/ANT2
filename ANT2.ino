@@ -1,6 +1,6 @@
 /* * BLIPBOX-V35 
- * Version: 2026-06-01-V8
- * Strategie: Gamepad-Emulation (HID Gamepad)
+ * Version: 2026-06-01-V9
+ * Strategie: Gamepad-Emulation (HID Gamepad - Korrigierte Methode)
  */
 
 #include <bluefruit.h>
@@ -18,12 +18,10 @@ void setup() {
 
   blehid.begin();
 
-  // Pin definieren
   pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
 
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  // Appearance 0x0540 = Gamepad
   Bluefruit.Advertising.addAppearance(0x0540); 
   Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
@@ -34,14 +32,17 @@ void setup() {
 
 void loop() {
   if (Bluefruit.connected()) {
-    // Wenn Taster gedrückt (LOW)
     if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
-      // Button 1 drücken
-      blehid.buttonPress(1);
-      delay(100);
-      blehid.buttonRelease();
       
-      delay(500); // Entprellen
+      // Gamepad-Report erstellen: Button 1 aktiv
+      // Die Methode 'send' erwartet eine Struktur mit x, y, z, rz, rx, ry, hatHat, buttons
+      blehid.send(0, 0, 0, 0, 0, 0, 0, 1);
+      delay(100);
+      
+      // Report mit "keine Buttons gedrückt" senden (Loslassen)
+      blehid.send(0, 0, 0, 0, 0, 0, 0, 0);
+      
+      delay(500); 
     }
   }
   delay(100);
