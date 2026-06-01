@@ -30,6 +30,7 @@ void setup() {
   Bluefruit.Advertising.start(0);
 }
 
+++
 void loop() {
   if (Bluefruit.connected()) {
     // 0x4B ist Page Down, 0 ist für "kein Modifier (Shift/Ctrl)"
