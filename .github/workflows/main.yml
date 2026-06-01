@@ -12,14 +12,12 @@ jobs:
       
       - name: Board Installation
         run: |
-          # Wir brauchen die Adafruit-Library für ANT-Support
           arduino-cli core update-index --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
           arduino-cli core install adafruit:nrf52 --additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
 
       - name: Compile
         run: |
-          # Wir kompilieren jetzt explizit für das nice!nano Profil
-          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --build-property "build.board=NICE_NANO" --output-dir ./build .
+          arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
       - name: UF2 Erstellung
         run: |
