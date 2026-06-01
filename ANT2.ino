@@ -1,30 +1,32 @@
 #include <bluefruit.h>
 
-// Wir aktivieren den Human Interface Device (HID) Service für Tastaturen
+// Wir instanziieren den HID-Dienst korrekt als eigenes Objekt
 BLEDis       bledis;
-BLEHidGamepad bledgamepad; // Oder BLEHidAdafruit für Standard-Tasten
+BLEHidAdafruit blehid;
 
 void setup() {
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
   Bluefruit.setName("BLIPBOX-V35");
 
-  // Geräte-Informationen setzen
+  // Geräte-Informationen befüllen
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Blipbox V35");
   bledis.begin();
 
-  // HID-Dienst starten
-  Bluefruit.Hid.begin();
+  // HID-Dienst initialisieren
+  blehid.begin();
 
-  // Wir nutzen die Pin-Map, die du vorhin gefunden hast
+  // Deinen funktionierenden Hardware-Pin als Eingang deklarieren
   pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
 
-  // Advertising starten
+  // Advertising für HID-Geräte aufbauen
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
-  Bluefruit.Advertising.addService(Bluefruit.Hid);
+  
+  // Hier binden wir den HID-Service korrekt ein
+  Bluefruit.Advertising.addService(blehid);
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
@@ -32,16 +34,15 @@ void setup() {
 }
 
 void loop() {
-  // Wenn die Verbindung steht und der Taster (P1.06) gedrückt wird
+  // Wenn verbunden und der Taster gedrückt wird (LOW)
   if (Bluefruit.connected() && (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW)) {
     
-    // Wir simulieren den Druck der "Pfeil runter"-Taste, um durch das Coros-Menü zu blättern
-    // 0x42 ist der Standard HID-Code für "Volume Down" oder Navigations-Tasten
-    Bluefruit.Hid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT); 
-    delay(100);
-    Bluefruit.Hid.consumerKeyRelease(); // Taste wieder loslassen
+    // Wir senden den Consumer-Key für "Lautstärke runter" (wird von vielen Systemen als Blätter-Befehl genutzt)
+    blehid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT);
+    delay(50);
+    blehid.consumerKeyRelease(); // Wichtig: Taste wieder loslassen
     
-    // Entprellen, damit ein Klick nicht als 500 Klicks erkannt wird
+    // Entprellen, damit ein Klick nicht dauerhaft feuert
     delay(300); 
   }
 }
