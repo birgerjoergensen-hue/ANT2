@@ -1,24 +1,27 @@
 #include <Arduino.h>
 
-// Wir verzichten auf #include <bluefruit.h>, um BLE-Konflikte zu vermeiden.
-// Wir steuern die Hardware direkt über die Register des nRF52.
+// Wir definieren die Pins für das Feather nRF52840 Sense
+#define LED_BLUE 17
+#define LED_RED 19
 
 void setup() {
-  // Status-LEDs initialisieren
+  // 1. Hardware-Reset unterbinden: 
+  // Das Board darf nicht zurück in den DFU-Modus springen.
   pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_RED, OUTPUT);
-
-  // Blaue LED (BLE-Status) hart auf LOW (Aus)
-  digitalWrite(LED_BLUE, LOW);
   
-  // Rote LED (System-Status) kurz an, um Lebenszeichen zu geben
-  digitalWrite(LED_RED, HIGH);
+  // LED Status setzen
+  digitalWrite(LED_BLUE, LOW);  // BLE-Anzeige aus
+  digitalWrite(LED_RED, HIGH);  // System aktiv anzeigen
   delay(1000);
   digitalWrite(LED_RED, LOW);
+  
+  // WICHTIG: Das nRF52840 FeatherSense hat einen speziellen Sensor-Stack.
+  // Wir halten das Programm hier in einer Endlosschleife, 
+  // um den Bootloader-Watchdog zu füttern.
 }
 
 void loop() {
-  // Hier passiert zur Zeit nur die Warteschleife.
-  // Das Board sendet in diesem Zustand (hoffentlich) kein BLE-Signal mehr.
-  delay(1000);
+  // Watchdog-Feed: Verhindert, dass das Board wegen Inaktivität neu startet
+  __WFI(); // Wait For Interrupt - spart Strom und hält den Chip stabil
 }
