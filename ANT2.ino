@@ -1,37 +1,48 @@
 /* * BLIPBOX-V35 
- * Version: 2026-06-01-V6
- * Strategie: ANT+ Shift (SRAM AXS) ohne externe Header
+ * Version: 2026-06-01-V8
+ * Strategie: Gamepad-Emulation (HID Gamepad)
  */
 
 #include <bluefruit.h>
 
-// Wir nutzen die direkte Hardware-Schnittstelle für ANT
-// Die nRF52-Bibliothek von Adafruit hat dies eingebaut
+BLEDis       bledis;
+BLEHidGamepad blehid;
 
 void setup() {
   Bluefruit.begin();
-  
-  // Konfiguration der ANT-Schnittstelle für einen SRAM-AXS Schalter
-  // Wir emulieren einen "Shifting" Sender (Device Type 0x05)
-  // Das ist ein festes Protokoll, kein "Include" nötig
-  
+  Bluefruit.setName("BLIPBOX-REMOTE");
+
+  bledis.setManufacturer("Adafruit Industries");
+  bledis.setModel("Blipbox V35");
+  bledis.begin();
+
+  blehid.begin();
+
+  // Pin definieren
   pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
+
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+  // Appearance 0x0540 = Gamepad
+  Bluefruit.Advertising.addAppearance(0x0540); 
+  Bluefruit.Advertising.addService(blehid);
+  Bluefruit.Advertising.addName();
+  
+  Bluefruit.Advertising.restartOnDisconnect(true);
+  Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  // Bei ANT+ Schaltungen gibt es keinen "Connect"-Status wie bei BLE
-  // Das Gerät "schreit" seine Daten einfach in den Raum.
-  
-  if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
-    // Sende "Schaltbefehl" (simuliert)
-    // Wir nutzen hier ein einfaches Byte-Pattern, das SRAM AXS entspricht
-    uint8_t buffer[] = {0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    
-    // Sende über ANT (Low-Level Zugriff der Bluefruit Library)
-    sd_ant_broadcast_message_tx(0, 8, buffer);
-    
-    delay(300);
+  if (Bluefruit.connected()) {
+    // Wenn Taster gedrückt (LOW)
+    if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
+      // Button 1 drücken
+      blehid.buttonPress(1);
+      delay(100);
+      blehid.buttonRelease();
+      
+      delay(500); // Entprellen
+    }
   }
-  
   delay(100);
 }
