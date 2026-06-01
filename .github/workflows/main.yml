@@ -8,6 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Tooling & Pfad-Fix
+        run: |
+          pip3 install adafruit-nrfutil
+          # Wir finden den Pfad, wo pip es installiert hat
+          TOOL_DIR=$(python3 -m site --user-base)/bin
+          echo "$TOOL_DIR" >> $GITHUB_PATH
+          
       - uses: arduino/setup-arduino-cli@v2
       
       - name: Board Installation
@@ -17,6 +24,8 @@ jobs:
 
       - name: Compile
         run: |
+          # Wir setzen den Pfad nochmal explizit im Shell-Kontext
+          export PATH=$PATH:$(python3 -m site --user-base)/bin
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
       - name: UF2 Erstellung
