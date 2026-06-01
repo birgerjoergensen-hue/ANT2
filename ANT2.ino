@@ -1,6 +1,6 @@
 /* * BLIPBOX-V35 
- * Version: 2026-06-01-V9
- * Strategie: Gamepad-Emulation (HID Gamepad - Korrigierte Methode)
+ * Version: 2026-06-01-V10
+ * Strategie: HID Gamepad mit korrekter Methode: gamepadReport
  */
 
 #include <bluefruit.h>
@@ -34,13 +34,17 @@ void loop() {
   if (Bluefruit.connected()) {
     if (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW) {
       
-      // Gamepad-Report erstellen: Button 1 aktiv
-      // Die Methode 'send' erwartet eine Struktur mit x, y, z, rz, rx, ry, hatHat, buttons
-      blehid.send(0, 0, 0, 0, 0, 0, 0, 1);
+      // Korrekt: gamepadReport nimmt die Struktur entgegen
+      hid_gamepad_report_t report = {
+        .x = 0, .y = 0, .z = 0, .rz = 0, .rx = 0, .ry = 0,
+        .hat = 0, .buttons = 1
+      };
+      blehid.gamepadReport(&report);
       delay(100);
       
-      // Report mit "keine Buttons gedrückt" senden (Loslassen)
-      blehid.send(0, 0, 0, 0, 0, 0, 0, 0);
+      // Report mit Buttons = 0 senden
+      report.buttons = 0;
+      blehid.gamepadReport(&report);
       
       delay(500); 
     }
