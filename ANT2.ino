@@ -1,38 +1,47 @@
 #include <bluefruit.h>
 
-BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
-BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
-
-// Das ist dein funktionierender Pin aus der Historie (Port 1, Pin 6)
-#define BUTTON_PIN NRF_GPIO_PIN_MAP(1, 6) 
+// Wir aktivieren den Human Interface Device (HID) Service für Tastaturen
+BLEDis       bledis;
+BLEHidGamepad bledgamepad; // Oder BLEHidAdafruit für Standard-Tasten
 
 void setup() {
-  // Wir nutzen wieder INPUT_PULLUP, damit der Pin sauber auf 3.3V gezogen wird,
-  // solange du den Taster NICHT drückst.
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-  
   Bluefruit.begin();
+  Bluefruit.setTxPower(4);
   Bluefruit.setName("BLIPBOX-V35");
-  
-  hrms.begin();
-  hrmc.setProperties(CHR_PROPS_NOTIFY);
-  hrmc.setFixedLen(2);
-  hrmc.begin();
 
-  Bluefruit.Advertising.addService(hrms);
+  // Geräte-Informationen setzen
+  bledis.setManufacturer("Adafruit Industries");
+  bledis.setModel("Blipbox V35");
+  bledis.begin();
+
+  // HID-Dienst starten
+  Bluefruit.Hid.begin();
+
+  // Wir nutzen die Pin-Map, die du vorhin gefunden hast
+  pinMode(NRF_GPIO_PIN_MAP(1, 6), INPUT_PULLUP);
+
+  // Advertising starten
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
+  Bluefruit.Advertising.addService(Bluefruit.Hid);
   Bluefruit.Advertising.addName();
+  
+  Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  if (Bluefruit.connected()) {
-    // Wenn der Taster gedrückt wird, schaltet er gegen Masse -> Zustand wird LOW.
-    // Taster gedrückt (LOW) -> 100 BPM (0x64)
-    // Taster offen (HIGH) -> 60 BPM (0x3C)
-    uint8_t hrValue = (digitalRead(BUTTON_PIN) == LOW) ? 0x64 : 0x3C;
+  // Wenn die Verbindung steht und der Taster (P1.06) gedrückt wird
+  if (Bluefruit.connected() && (digitalRead(NRF_GPIO_PIN_MAP(1, 6)) == LOW)) {
     
-    uint8_t hrmData[] = {0x00, hrValue}; 
-    hrmc.notify(hrmData, sizeof(hrmData));
+    // Wir simulieren den Druck der "Pfeil runter"-Taste, um durch das Coros-Menü zu blättern
+    // 0x42 ist der Standard HID-Code für "Volume Down" oder Navigations-Tasten
+    Bluefruit.Hid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT); 
+    delay(100);
+    Bluefruit.Hid.consumerKeyRelease(); // Taste wieder loslassen
+    
+    // Entprellen, damit ein Klick nicht als 500 Klicks erkannt wird
+    delay(300); 
   }
-  delay(150); // Leicht beschleunigt für knackiges Feedback am Coros
 }
