@@ -21,14 +21,14 @@ void setup() {
   Bluefruit.Advertising.addName();
   
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244); // 20ms bis 150ms
+  Bluefruit.Advertising.setInterval(32, 244);
   Bluefruit.Advertising.setFastTimeout(30);
-  Bluefruit.Advertising.start(0); // Dauerhaftes Advertising
+  Bluefruit.Advertising.start(0);
 }
 
 void loop() {
-  if (Bluefruit.Connected()) {
-    // Sende Dummy-Herzfrequenz (72 BPM) als Hex-Daten: 00 48
+  // Hier war der Fehler: connected() statt Connected()
+  if (Bluefruit.connected()) {
     uint8_t hrmData[] = {0x00, 0x48}; 
     hrmc.notify(hrmData, sizeof(hrmData));
   }
