@@ -7,6 +7,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: System Tooling installieren
+        run: |
+          pip3 install adafruit-nrfutil
+          # Pfad in den PATH exportieren
+          echo "/home/runner/.local/bin" >> $GITHUB_PATH
+
       - uses: arduino/setup-arduino-cli@v2
       
       - name: Board Installation
@@ -16,7 +23,6 @@ jobs:
 
       - name: Compile
         run: |
-          # Zurück zum korrekten FQBN für dein Board
           arduino-cli compile --fqbn adafruit:nrf52:feather52840sense --output-dir ./build .
 
       - name: UF2 Erstellung
